@@ -119,25 +119,17 @@
       position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
 
-    /* FREEZE FIRST COLUMN (STUDENTS) */
+    /* FREEZE ONLY FIRST COLUMN (STUDENTS) */
     th:first-child, td:first-child {
       position: sticky; left: 0; z-index: 3; background: var(--card);
       border-right: 2px solid var(--border); box-shadow: 2px 0 5px rgba(0,0,0,0.05);
       width: 140px !important; min-width: 140px !important; max-width: 140px !important;
     }
 
-    /* FREEZE LAST COLUMN (STATUS / REMARKS) */
-    th:last-child, td:last-child {
-      position: sticky; right: 0; z-index: 3; background: var(--card);
-      border-left: 2px solid var(--border); box-shadow: -2px 0 5px rgba(0,0,0,0.05);
-      width: 130px !important; min-width: 130px !important; max-width: 130px !important;
-    }
-
     th:first-child { background: #f1f5f9; z-index: 11; }
-    th:last-child { background: #f1f5f9; z-index: 11; }
 
-    th:not(:first-child):not(:last-child), td:not(:first-child):not(:last-child) {
-      min-width: 75px; max-width: 90px;
+    th:not(:first-child), td:not(:first-child) {
+      min-width: 75px; max-width: 110px;
     }
 
     .student-info { display: flex; align-items: center; gap: 0.35rem; text-align: left; }
@@ -153,16 +145,26 @@
       margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
     }
 
-    .status-cell { font-size: 0.75rem; color: #15803d; font-weight: 600; cursor: default; line-height: 1.1; word-break: break-word; }
+    /* ITALICIZED REMARKS / STATUS CELL */
+    .status-cell { 
+      font-size: 0.75rem; color: #15803d; font-weight: 600; font-style: italic; 
+      cursor: default; line-height: 1.1; word-break: break-word; min-width: 110px; 
+    }
     body.teacher-mode .status-cell { cursor: pointer; text-decoration: underline dotted var(--primary); }
 
+    /* TOKEN BUTTON STYLING (FULL VIBRANT OPACITY FOR COMPLETED TOKENS IN ALL VIEWS) */
     .token-btn {
       background: none; border: none; font-size: 1.3rem; cursor: pointer;
       transition: transform 0.15s; opacity: 1 !important; filter: none !important;
+      color: initial !important; -webkit-text-fill-color: initial !important;
     }
     .token-btn:hover { transform: scale(1.2); }
     .token-btn.empty { opacity: 0.18 !important; filter: grayscale(100%) !important; }
-    .token-btn:disabled { cursor: default; }
+    .token-btn:disabled { 
+      cursor: default; opacity: 1 !important; filter: none !important; 
+      color: initial !important; -webkit-text-fill-color: initial !important; 
+    }
+    .token-btn.empty:disabled { opacity: 0.18 !important; filter: grayscale(100%) !important; }
 
     .icon-btn-sm { background: none; border: none; cursor: pointer; font-size: 0.7rem; opacity: 0.7; margin: 0 1px; }
     .icon-btn-sm:hover { opacity: 1; }
@@ -552,7 +554,7 @@
 
         let statusCell = `
           <td class="status-cell" onclick="editRemark(${student.id})">
-            ${escapeHtml(currentRemark)}
+            <em>${escapeHtml(currentRemark)}</em>
           </td>
         `;
 
@@ -569,7 +571,7 @@
 
       const sectionResources = (state.resources || []).filter(r => r.sectionId === currentSection.id);
       if (sectionResources.length === 0) {
-        list.innerHTML = `<p style="font-size:0.85rem; color:var(--muted); margin-top:0.5rem; italic">No notes or lesson attachments posted yet.</p>`;
+        list.innerHTML = `<p style="font-size:0.85rem; color:var(--muted); margin-top:0.5rem; font-style: italic;">No notes or lesson attachments posted yet.</p>`;
         return;
       }
 
