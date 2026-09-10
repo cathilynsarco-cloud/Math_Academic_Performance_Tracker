@@ -316,22 +316,21 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // WEBSITE 2 FIREBASE CONFIGURATION
+    // WEBSITE 1 FIREBASE CONFIGURATION
     const firebaseConfig = {
-      apiKey: "AIzaSyA0Yez-NLfbhU2Zj7CqeyNAgJ-vOQYVlvw",
-      authDomain: "math7-database-26.firebaseapp.com",
-      databaseURL: "https://math7-database-26-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "math7-database-26",
-      storageBucket: "math7-database-26.firebasestorage.app",
-      messagingSenderId: "1057749107077",
-      appId: "1:1057749107077:web:aae6d67955e0ba75f0c4ec"
+      apiKey: "AIzaSyAABIEep2GsKERmOWUktIzT1_AEnv2MEZo",
+      authDomain: "math-tracker-d070f.firebaseapp.com",
+      projectId: "math-tracker-d070f",
+      storageBucket: "math-tracker-d070f.firebasestorage.app",
+      messagingSenderId: "1040140743983",
+      appId: "1:1040140743983:web:e4e1ca6b1e6f6c6d269dda"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     
-    // WEBSITE 2 STATE COLLECTION
-    const docRef = db.collection('dashboard').doc('website_2_state');
+    // WEBSITE 1 STATE DOCUMENT
+    const docRef = db.collection('dashboard').doc('website_1_state');
 
     const TEACHER_PASS = "121488";
     let isTeacher = false;
@@ -362,11 +361,14 @@
       }
     });
 
-    function saveState() {
-      docRef.set(state).catch(err => {
-        console.error("Firestore Save Error: ", err);
-        alert("Failed to save changes!");
-      });
+    async function saveState() {
+      try {
+        await docRef.set(state);
+        console.log("Saved successfully to Firestore:", docRef.path);
+      } catch (err) {
+        console.error("Firestore Save Error:", err);
+        alert("Failed to save changes.\n\n" + (err.code || "") + "\n" + (err.message || err));
+      }
     }
 
     function escapeHtml(str) {
