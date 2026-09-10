@@ -1,10 +1,9 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Classroom Activity Hub - Website 2</title>
+  <title>Classroom Activity Hub - Scalable Multi-Doc Engine</title>
 
   <style>
     :root {
@@ -18,4383 +17,640 @@
       --danger: #ef4444;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      padding-bottom: 4rem;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 4rem; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
 
     /* HEADER BANNER */
     .header-banner {
-      width: 100%;
-      height: 230px;
-      background-size: cover;
-      background-position: center 50%;
-      position: relative;
-      background-color: var(--primary);
-      margin-bottom: 2rem;
-      display: flex;
-      align-items: flex-end;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 100%; height: 230px; background-size: cover; background-position: center 50%;
+      position: relative; background-color: var(--primary); margin-bottom: 2rem;
+      display: flex; align-items: flex-end; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-
-    .banner-overlay {
-      width: 100%;
-      padding: 1.5rem 0;
-      background: linear-gradient(transparent, rgba(15,23,42,0.85));
-      color: white;
-    }
-
-    .banner-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .mode-badge {
-      padding: 0.4rem 0.8rem;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .mode-teacher {
-      background: #e0f2fe;
-      color: #0369a1;
-    }
-
-    .mode-student {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .btn {
-      padding: 0.6rem 1rem;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn:hover {
-      background: var(--primary-hover);
-    }
-
-    .btn-secondary {
-      background: #cbd5e1;
-      color: #334155;
-    }
-
-    .btn-secondary:hover {
-      background: #94a3b8;
-    }
-
-    .banner-edit-controls {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      display: none;
-      gap: 0.5rem;
-    }
-
-    body.teacher-mode .banner-edit-controls {
-      display: flex;
-    }
-
-    .banner-btn {
-      background: rgba(0,0,0,0.7);
-      color: white;
-      border: none;
-      padding: 0.4rem 0.7rem;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
-
-    .editable-heading {
-      cursor: default;
-    }
-
-    body.teacher-mode .editable-heading {
-      cursor: pointer;
-      border-bottom: 2px dashed rgba(255,255,255,0.6);
-    }
+    .banner-overlay { width: 100%; padding: 1.5rem 0; background: linear-gradient(transparent, rgba(15,23,42,0.85)); color: white; }
+    .banner-content { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; }
+    .mode-badge { padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .mode-student { background: #dcfce7; color: #166534; }
+    .mode-teacher { background: #e0f2fe; color: #0369a1; }
+    
+    .btn { padding: 0.6rem 1rem; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #cbd5e1; color: #334155; }
+    .btn-secondary:hover { background: #94a3b8; }
+    .banner-edit-controls { position: absolute; top: 15px; right: 15px; display: none; gap: 0.5rem; }
+    body.teacher-mode .banner-edit-controls { display: flex; }
+    .banner-btn { background: rgba(0,0,0,0.7); color: white; border: none; padding: 0.4rem 0.7rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; }
+    .editable-heading { cursor: default; }
+    body.teacher-mode .editable-heading { cursor: pointer; border-bottom: 2px dashed rgba(255,255,255,0.6); }
 
     /* GRID & CARDS */
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .section-card {
-      background: var(--card);
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      position: relative;
-    }
-
-    .section-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    }
-
-    .card-cover {
-      height: 130px;
-      background-size: cover;
-      background-position: center 50%;
-      position: relative;
-      background-color: #cbd5e1;
-    }
-
-    .card-body {
-      padding: 1.25rem;
-    }
-
-    .card-title {
-      font-size: 1.2rem;
-      font-weight: bold;
-      margin-bottom: 0.4rem;
-    }
-
-    .card-meta {
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-
-    .card-actions {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: none;
-      gap: 0.3rem;
-      flex-wrap: wrap;
-    }
-
-    body.teacher-mode .card-actions {
-      display: flex;
-    }
-
-    .action-badge-btn {
-      background: rgba(0,0,0,0.7);
-      color: white;
-      border: none;
-      padding: 0.3rem 0.5rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
+    .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+    .section-card { background: var(--card); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; }
+    .section-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    .card-cover { height: 130px; background-size: cover; background-position: center 50%; position: relative; background-color: #cbd5e1; }
+    .card-body { padding: 1.25rem; }
+    .card-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 0.4rem; }
+    .card-meta { font-size: 0.85rem; color: var(--muted); }
+    .card-actions { position: absolute; top: 10px; right: 10px; display: none; gap: 0.3rem; flex-wrap: wrap; }
+    body.teacher-mode .card-actions { display: flex; }
+    .action-badge-btn { background: rgba(0,0,0,0.7); color: white; border: none; padding: 0.3rem 0.5rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer; }
 
     /* TEACHER PANEL */
-    .teacher-panel {
-      background: var(--card);
-      padding: 1.25rem;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      margin-bottom: 1.5rem;
-      display: none;
-    }
-
-    body.teacher-mode .teacher-panel {
-      display: block;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 0.75rem;
-      align-items: center;
-    }
-
-    input,
-    select,
-    textarea {
-      padding: 0.6rem 0.8rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      outline: none;
-      font-size: 0.9rem;
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-
-    .file-input-wrapper {
-      position: relative;
-      display: inline-block;
-      width: 100%;
-    }
-
-    .file-input-label {
-      display: block;
-      padding: 0.6rem 0.8rem;
-      background: #f1f5f9;
-      border: 1px dashed var(--border);
-      border-radius: 8px;
-      text-align: center;
-      cursor: pointer;
-      font-size: 0.85rem;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .file-input-wrapper input[type="file"] {
-      position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
+    .teacher-panel { background: var(--card); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.5rem; display: none; }
+    body.teacher-mode .teacher-panel { display: block; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; align-items: center; }
+    input, select, textarea { padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 8px; outline: none; font-size: 0.9rem; }
+    textarea { resize: vertical; min-height: 60px; }
+    .file-input-wrapper { position: relative; display: inline-block; width: 100%; }
+    .file-input-label { display: block; padding: 0.6rem 0.8rem; background: #f1f5f9; border: 1px dashed var(--border); border-radius: 8px; text-align: center; cursor: pointer; font-size: 0.85rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-input-wrapper input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
 
     /* TERM TABS */
-    .term-tabs {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .term-tab {
-      padding: 0.5rem 1rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--card);
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
-      color: var(--muted);
-      transition: all 0.2s;
-    }
-
-    .term-tab.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
+    .term-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .term-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--card); font-weight: 600; font-size: 0.85rem; cursor: pointer; color: var(--muted); transition: all 0.2s; }
+    .term-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
 
     /* TABLE */
-    .table-wrapper {
-      overflow: auto;
-      max-height: 70vh;
-      background: var(--card);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
+    .table-wrapper { overflow: auto; max-height: 70vh; background: var(--card); border-radius: 12px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    th, td { padding: 0.55rem 0.4rem; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
+    th { background: #f1f5f9; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    th:first-child, td:first-child { position: sticky; left: 0; z-index: 3; background: var(--card); border-right: 2px solid var(--border); box-shadow: 2px 0 5px rgba(0,0,0,0.05); width: 140px !important; min-width: 140px !important; max-width: 140px !important; }
+    th:first-child { background: #f1f5f9; z-index: 11; }
+    th:not(:first-child), td:not(:first-child) { min-width: 75px; max-width: 110px; }
 
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-    }
+    .student-info { display: flex; align-items: center; gap: 0.35rem; text-align: left; }
+    .student-name { cursor: default; font-size: 0.78rem; line-height: 1.1; word-break: break-word; }
+    body.teacher-mode .student-name { cursor: pointer; text-decoration: underline dotted var(--primary); }
+    .avatar { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); object-fit: cover; flex-shrink: 0; cursor: pointer; }
+    .avatar:hover { opacity: 0.8; border-color: var(--primary); }
 
-    th,
-    td {
-      padding: 0.55rem 0.4rem;
-      border-bottom: 1px solid var(--border);
-      text-align: center;
-      vertical-align: middle;
-    }
+    .act-header-wrapper { cursor: pointer; display: block; color: inherit; text-decoration: none; padding: 0.2rem; border-radius: 6px; }
+    .act-header-wrapper:hover { background: #e2e8f0; }
+    .act-title-text { font-size: 0.7rem; color: var(--primary); font-weight: bold; text-transform: none; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .status-cell { font-size: 0.75rem; color: #15803d; font-weight: 600; font-style: italic; cursor: default; line-height: 1.1; word-break: break-word; min-width: 110px; }
+    body.teacher-mode .status-cell { cursor: pointer; text-decoration: underline dotted var(--primary); }
 
-    th {
-      background: #f1f5f9;
-      font-size: 0.75rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
+    .token-btn { background: none; border: none; font-size: 1.3rem; cursor: pointer; transition: transform 0.15s; }
+    .token-btn:hover { transform: scale(1.2); }
+    .token-btn.empty { opacity: 0.18 !important; filter: grayscale(100%) !important; }
 
-    th:first-child,
-    td:first-child {
-      position: sticky;
-      left: 0;
-      z-index: 3;
-      background: var(--card);
-      border-right: 2px solid var(--border);
-      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-      width: 140px !important;
-      min-width: 140px !important;
-      max-width: 140px !important;
-    }
+    .nav-breadcrumb { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+    .resources-section { margin-top: 2rem; background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 1.25rem; }
+    .resource-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem; margin-top: 0.75rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
 
-    th:first-child {
-      background: #f1f5f9;
-      z-index: 11;
-    }
-
-    th:not(:first-child),
-    td:not(:first-child) {
-      min-width: 75px;
-      max-width: 110px;
-    }
-
-    .student-info {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      text-align: left;
-    }
-
-    .student-name {
-      cursor: default;
-      font-size: 0.78rem;
-      line-height: 1.1;
-      word-break: break-word;
-    }
-
-    body.teacher-mode .student-name {
-      cursor: pointer;
-      text-decoration: underline dotted var(--primary);
-    }
-
-    .avatar {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      border: 1px solid var(--border);
-      object-fit: cover;
-      flex-shrink: 0;
-      cursor: pointer;
-    }
-
-    .avatar:hover {
-      opacity: 0.8;
-      border-color: var(--primary);
-    }
-
-    .act-header-wrapper {
-      cursor: pointer;
-      display: block;
-      color: inherit;
-      text-decoration: none;
-      padding: 0.2rem;
-      border-radius: 6px;
-    }
-
-    .act-header-wrapper:hover {
-      background: #e2e8f0;
-    }
-
-    .act-title-text {
-      font-size: 0.7rem;
-      color: var(--primary);
-      font-weight: bold;
-      text-transform: none;
-      margin-top: 2px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .status-cell {
-      font-size: 0.75rem;
-      color: #15803d;
-      font-weight: 600;
-      font-style: italic;
-      cursor: default;
-      line-height: 1.1;
-      word-break: break-word;
-      min-width: 110px;
-    }
-
-    body.teacher-mode .status-cell {
-      cursor: pointer;
-      text-decoration: underline dotted var(--primary);
-    }
-
-    .token-btn {
-      background: none;
-      border: none;
-      font-size: 1.3rem;
-      cursor: pointer;
-      transition: transform 0.15s;
-      opacity: 1 !important;
-      filter: none !important;
-      color: initial !important;
-      -webkit-text-fill-color: initial !important;
-    }
-
-    .token-btn:hover {
-      transform: scale(1.2);
-    }
-
-    .token-btn.empty {
-      opacity: 0.18 !important;
-      filter: grayscale(100%) !important;
-    }
-
-    .token-btn:disabled {
-      cursor: default;
-      opacity: 1 !important;
-      filter: none !important;
-      color: initial !important;
-      -webkit-text-fill-color: initial !important;
-    }
-
-    .token-btn.empty:disabled {
-      opacity: 0.18 !important;
-      filter: grayscale(100%) !important;
-    }
-
-    .icon-btn-sm {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.7rem;
-      opacity: 0.7;
-      margin: 0 1px;
-    }
-
-    .icon-btn-sm:hover {
-      opacity: 1;
-    }
-
-    .nav-breadcrumb {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .resources-section {
-      margin-top: 2rem;
-      background: var(--card);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      padding: 1.25rem;
-    }
-
-    .resource-card {
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.8rem;
-      margin-top: 0.75rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(15,23,42,0.6);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-      padding: 1rem;
-    }
-
-    .modal-box {
-      background: var(--card);
-      border-radius: 16px;
-      width: 100%;
-      max-width: 500px;
-      padding: 1.5rem;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
-      position: relative;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 12px;
-      right: 15px;
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--muted);
-    }
+    .modal-backdrop { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.6); display: none; justify-content: center; align-items: center; z-index: 100; padding: 1rem; }
+    .modal-box { background: var(--card); border-radius: 16px; width: 100%; max-width: 500px; padding: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto; }
+    .modal-close { position: absolute; top: 12px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); }
   </style>
 </head>
 
 <body>
 
   <!-- HIDDEN FILE INPUTS -->
-  <input
-    type="file"
-    id="global-banner-picker"
-    accept="image/*"
-    style="display:none;"
-    onchange="handleBannerFileSelect(event)"
-  />
-
-  <input
-    type="file"
-    id="global-cover-picker"
-    accept="image/*"
-    style="display:none;"
-    onchange="handleCoverFileSelect(event)"
-  />
-
-  <input
-    type="file"
-    id="global-avatar-picker"
-    accept="image/*"
-    style="display:none;"
-    onchange="handleAvatarFileSelect(event)"
-  />
+  <input type="file" id="global-banner-picker" accept="image/*" style="display:none;" onchange="handleBannerFileSelect(event)" />
+  <input type="file" id="global-cover-picker" accept="image/*" style="display:none;" onchange="handleCoverFileSelect(event)" />
+  <input type="file" id="global-avatar-picker" accept="image/*" style="display:none;" onchange="handleAvatarFileSelect(event)" />
 
   <!-- HEADER BANNER -->
   <div class="header-banner" id="main-banner">
-
     <div class="banner-edit-controls">
-
-      <button
-        class="banner-btn"
-        onclick="document.getElementById('global-banner-picker').click()"
-      >
-        📷 Photo
-      </button>
-
-      <button
-        class="banner-btn"
-        onclick="adjustBannerY()"
-      >
-        ↕️ Adjust Frame
-      </button>
-
+      <button class="banner-btn" onclick="document.getElementById('global-banner-picker').click()">📷 Photo</button>
+      <button class="banner-btn" onclick="adjustBannerY()">↕️ Adjust Frame</button>
     </div>
-
     <div class="banner-overlay">
-
       <div class="container banner-content">
-
         <div>
-
-          <h1
-            id="banner-heading-text"
-            class="editable-heading"
-            onclick="editHeadingText()"
-            style="font-size: 2rem;"
-          >
+          <h1 id="banner-heading-text" class="editable-heading" onclick="editHeadingText()" style="font-size: 2rem;">
             📐 Mathematics 7 Activity Hub
           </h1>
-
-          <p style="opacity: 0.9; font-size: 0.95rem;">
-            Track progress, complete performance tasks, and earn reward tokens!
-          </p>
-
+          <p style="opacity: 0.9; font-size: 0.95rem;">Track progress, complete performance tasks, and earn reward tokens!</p>
         </div>
-
         <div>
-
-          <span
-            id="mode-indicator"
-            class="mode-badge mode-student"
-          >
-            👀 Student View
-          </span>
-
-          <button
-            class="btn"
-            id="toggle-mode-btn"
-            onclick="toggleMode()"
-            style="margin-left:0.5rem;"
-          >
-            🔑 Teacher Login
-          </button>
-
+          <span id="mode-indicator" class="mode-badge mode-student">👀 Student View</span>
+          <button class="btn" id="toggle-mode-btn" onclick="toggleMode()" style="margin-left:0.5rem;">🔑 Teacher Login</button>
         </div>
-
       </div>
-
     </div>
-
   </div>
 
-
   <div class="container">
-
     <!-- BREADCRUMB -->
-    <div
-      class="nav-breadcrumb"
-      id="breadcrumb"
-      style="display: none;"
-    >
-
-      <button
-        class="btn btn-secondary"
-        onclick="showHome()"
-      >
-        ← Back to Sections
-      </button>
-
-      <h2
-        id="active-section-title"
-        style="font-size: 1.3rem;"
-      ></h2>
-
+    <div class="nav-breadcrumb" id="breadcrumb" style="display: none;">
+      <button class="btn btn-secondary" onclick="showHome()">← Back to Sections</button>
+      <h2 id="active-section-title" style="font-size: 1.3rem;"></h2>
     </div>
-
 
     <!-- TEACHER CONTROLS PANEL -->
     <div class="teacher-panel">
-
-      <h3 style="margin-bottom: 0.75rem;">
-        ✏️ Teacher Controls
-      </h3>
+      <h3 style="margin-bottom: 0.75rem;">✏️ Teacher Controls</h3>
 
       <!-- ADD SECTION -->
-      <div
-        class="form-grid"
-        id="form-add-section"
-        style="margin-bottom: 1rem;"
-      >
-
-        <input
-          type="text"
-          id="new-section-name"
-          placeholder="New Section Name"
-        />
-
+      <div class="form-grid" id="form-add-section" style="margin-bottom: 1rem;">
+        <input type="text" id="new-section-name" placeholder="New Section Name" />
         <div class="file-input-wrapper">
-
-          <span
-            class="file-input-label"
-            id="section-cover-label"
-          >
-            📷 Upload Cover
-          </span>
-
-          <input
-            type="file"
-            id="new-section-cover-file"
-            accept="image/*"
-            onchange="updateLabel(this, 'section-cover-label')"
-          />
-
+          <span class="file-input-label" id="section-cover-label">📷 Upload Cover</span>
+          <input type="file" id="new-section-cover-file" accept="image/*" onchange="updateLabel(this, 'section-cover-label')" />
         </div>
-
-        <button
-          class="btn"
-          onclick="addSection()"
-        >
-          + Add Section
-        </button>
-
+        <button class="btn" onclick="addSection()">+ Add Section</button>
       </div>
-
 
       <!-- SECTION CONTROLS -->
-      <div
-        class="form-grid"
-        id="form-section-controls"
-        style="display: none;"
-      >
-
-        <input
-          type="text"
-          id="new-student-name"
-          placeholder="Student Name"
-        />
-
+      <div class="form-grid" id="form-section-controls" style="display: none;">
+        <input type="text" id="new-student-name" placeholder="Student Name" />
         <div class="file-input-wrapper">
-
-          <span
-            class="file-input-label"
-            id="student-avatar-label"
-          >
-            👤 Photo (Optional)
-          </span>
-
-          <input
-            type="file"
-            id="new-student-avatar-file"
-            accept="image/*"
-            onchange="updateLabel(this, 'student-avatar-label')"
-          />
-
+          <span class="file-input-label" id="student-avatar-label">👤 Photo (Optional)</span>
+          <input type="file" id="new-student-avatar-file" accept="image/*" onchange="updateLabel(this, 'student-avatar-label')" />
         </div>
+        <button class="btn" onclick="addStudent()">+ Add Student</button>
 
-        <button
-          class="btn"
-          onclick="addStudent()"
-        >
-          + Add Student
-        </button>
+        <div style="grid-column: 1 / -1; height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
 
-
-        <div
-          style="
-            grid-column: 1 / -1;
-            height: 1px;
-            background: var(--border);
-            margin: 0.25rem 0;
-          "
-        ></div>
-
-
-        <input
-          type="text"
-          id="new-act-label"
-          placeholder="Header (e.g. Act #1, Quiz 1)"
-          value="Act #1"
-        />
-
-        <input
-          type="text"
-          id="new-act-title"
-          placeholder="Full Task Title"
-        />
-
-        <input
-          type="date"
-          id="new-act-date"
-          title="Activity Date"
-        />
-
-        <input
-          type="url"
-          id="new-act-link"
-          placeholder="Attachment/Drive Link"
-        />
-
+        <input type="text" id="new-act-label" placeholder="Header (e.g. Act #1)" value="Act #1" />
+        <input type="text" id="new-act-title" placeholder="Full Task Title" />
+        <input type="date" id="new-act-date" title="Activity Date" />
+        <input type="url" id="new-act-link" placeholder="Attachment/Drive Link" />
         <select id="new-act-token">
-
-          <option value="⭐">
-            ⭐ Star
-          </option>
-
-          <option value="🏆">
-            🏆 Trophy
-          </option>
-
-          <option value="🎨">
-            🎨 Palette
-          </option>
-
-          <option value="🏅">
-            🏅 Medal
-          </option>
-
-          <option value="🚀">
-            🚀 Rocket
-          </option>
-
+          <option value="⭐">⭐ Star</option>
+          <option value="🏆">🏆 Trophy</option>
+          <option value="🎨">🎨 Palette</option>
+          <option value="🏅">🏅 Medal</option>
+          <option value="🚀">🚀 Rocket</option>
         </select>
 
-
-        <textarea
-          id="new-act-desc"
-          placeholder="Complete activity description / instructions..."
-          style="grid-column: 1 / -1;"
-        ></textarea>
-
-
-        <button
-          class="btn"
-          style="grid-column: 1 / -1;"
-          onclick="assignActivity()"
-        >
-          + Assign Activity Task
-        </button>
-
+        <textarea id="new-act-desc" placeholder="Complete activity description / instructions..." style="grid-column: 1 / -1;"></textarea>
+        <button class="btn" style="grid-column: 1 / -1;" onclick="assignActivity()">+ Assign Activity Task</button>
       </div>
-
     </div>
-
 
     <!-- HOME VIEW -->
     <div id="home-view">
-
-      <h3
-        style="
-          margin-bottom: 1rem;
-          color: var(--muted);
-        "
-      >
-        Select Your Grade Level / Section
-      </h3>
-
-      <div
-        class="grid-container"
-        id="sections-grid"
-      ></div>
-
+      <h3 style="margin-bottom: 1rem; color: var(--muted);">Select Your Grade Level / Section</h3>
+      <div class="grid-container" id="sections-grid"></div>
     </div>
 
-
     <!-- SECTION DETAILS VIEW -->
-    <div
-      id="section-view"
-      style="display: none;"
-    >
-
+    <div id="section-view" style="display: none;">
       <div class="term-tabs">
-
-        <button
-          class="term-tab active"
-          id="term-1-btn"
-          onclick="switchTerm(1)"
-        >
-          Term 1
-        </button>
-
-        <button
-          class="term-tab"
-          id="term-2-btn"
-          onclick="switchTerm(2)"
-        >
-          Term 2
-        </button>
-
-        <button
-          class="term-tab"
-          id="term-3-btn"
-          onclick="switchTerm(3)"
-        >
-          Term 3
-        </button>
-
+        <button class="term-tab active" id="term-1-btn" onclick="switchTerm(1)">Term 1</button>
+        <button class="term-tab" id="term-2-btn" onclick="switchTerm(2)">Term 2</button>
+        <button class="term-tab" id="term-3-btn" onclick="switchTerm(3)">Term 3</button>
       </div>
-
 
       <div class="table-wrapper">
-
         <table>
-
           <thead>
-
             <tr id="table-header">
-
-              <th>
-                Student
-              </th>
-
-              <th>
-                Status
-              </th>
-
+              <th>Student</th>
+              <th>Status</th>
             </tr>
-
           </thead>
-
           <tbody id="table-body"></tbody>
-
         </table>
-
       </div>
-
 
       <!-- RESOURCES -->
       <div class="resources-section">
-
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-          "
-        >
-
-          <h3>
-            📚 Lesson Notes & Learning Attachments
-          </h3>
-
-          <button
-            class="btn"
-            style="display:none;"
-            id="add-resource-btn"
-            onclick="addResource()"
-          >
-            + Add Resource
-          </button>
-
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <h3>📚 Lesson Notes & Learning Attachments</h3>
+          <button class="btn" style="display:none;" id="add-resource-btn" onclick="addResource()">+ Add Resource</button>
         </div>
-
-        <p
-          style="
-            font-size: 0.85rem;
-            color: var(--muted);
-          "
-        >
-          Access supplementary guides, lectures, and download link modules below.
-        </p>
-
+        <p style="font-size: 0.85rem; color: var(--muted);">Access supplementary guides, lectures, and download link modules below.</p>
         <div id="resources-list"></div>
-
       </div>
-
     </div>
-
   </div>
-
 
   <!-- ACTIVITY POP-UP MODAL -->
-  <div
-    class="modal-backdrop"
-    id="act-modal"
-  >
-
+  <div class="modal-backdrop" id="act-modal">
     <div class="modal-box">
-
-      <button
-        class="modal-close"
-        onclick="closeModal()"
-      >
-        ×
-      </button>
-
-      <div
-        id="modal-label"
-        style="
-          font-size: 0.8rem;
-          font-weight: bold;
-          color: var(--primary);
-          text-transform: uppercase;
-        "
-      ></div>
-
-      <h2
-        id="modal-title"
-        style="
-          margin: 0.25rem 0 0.5rem 0;
-          font-size: 1.4rem;
-        "
-      ></h2>
-
-      <div
-        id="modal-date"
-        style="
-          font-size: 0.85rem;
-          color: var(--muted);
-          margin-bottom: 1rem;
-        "
-      ></div>
-
-      <p
-        style="
-          font-size: 0.85rem;
-          font-weight: bold;
-          margin-bottom: 0.2rem;
-        "
-      >
-        Instructions & Details:
-      </p>
-
-      <div
-        id="modal-desc"
-        style="
-          font-size: 0.95rem;
-          line-height: 1.5;
-          background: #f8fafc;
-          padding: 0.8rem;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          white-space: pre-wrap;
-          margin-bottom: 1.25rem;
-        "
-      ></div>
-
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <div id="modal-label" style="font-size: 0.8rem; font-weight: bold; color: var(--primary); text-transform: uppercase;"></div>
+      <h2 id="modal-title" style="margin: 0.25rem 0 0.5rem 0; font-size: 1.4rem;"></h2>
+      <div id="modal-date" style="font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem;"></div>
+      <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 0.2rem;">Instructions & Details:</p>
+      <div id="modal-desc" style="font-size: 0.95rem; line-height: 1.5; background: #f8fafc; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); white-space: pre-wrap; margin-bottom: 1.25rem;"></div>
       <div id="modal-link-container"></div>
-
     </div>
-
   </div>
 
-
-  <!-- ============================================================
-       FIREBASE LIBRARIES
-       ============================================================ -->
-
+  <!-- FIREBASE LIBRARIES -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-
   <script>
-
-    /* ============================================================
-       FIREBASE CONFIGURATION
-       ============================================================ */
-
+    /* FIREBASE CONFIGURATION */
     const firebaseConfig = {
-
-      apiKey:
-        "AIzaSyAABIEep2GsKERmOWUktIzT1_AEnv2MEZo",
-
-      authDomain:
-        "math-tracker-d070f.firebaseapp.com",
-
-      projectId:
-        "math-tracker-d070f",
-
-      storageBucket:
-        "math-tracker-d070f.firebasestorage.app",
-
-      messagingSenderId:
-        "1040140743983",
-
-      appId:
-        "1:1040140743983:web:e4e1ca6b1e6f6c6d269dda"
-
+      apiKey: "AIzaSyAABIEep2GsKERmOWUktIzT1_AEnv2MEZo",
+      authDomain: "math-tracker-d070f.firebaseapp.com",
+      projectId: "math-tracker-d070f",
+      storageBucket: "math-tracker-d070f.firebasestorage.app",
+      messagingSenderId: "1040140743983",
+      appId: "1:1040140743983:web:e4e1ca6b1e6f6c6d269dda"
     };
-
-
-    /* INITIALIZE FIREBASE */
 
     firebase.initializeApp(firebaseConfig);
-
     const db = firebase.firestore();
-
     const storage = firebase.storage();
 
-    const storageRoot = storage.ref();
-
-
-    /* ============================================================
-       FIRESTORE STATE DOCUMENT
-       ============================================================ */
-
-    const docRef =
-      db.collection('dashboard').doc('website_1_state');
-
-
-    /* ============================================================
-       SETTINGS
-       ============================================================ */
-
+    /* SETTINGS & CONSTANTS */
     const TEACHER_PASS = "121488";
+    const MAX_ORIGINAL_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+    const MAX_STORED_IMAGE_SIZE = 100 * 1024; // Target ~100KB per image for super fast load times
+    const INITIAL_MAX_DIMENSION = 600;
+    const MIN_MAX_DIMENSION = 250;
 
-    /*
-      Maximum original image accepted by browser.
-      This prevents someone from trying to upload a
-      50 MB phone photo.
-    */
-    const MAX_ORIGINAL_IMAGE_SIZE =
-      10 * 1024 * 1024;
-
-
-    /*
-      Maximum FINAL compressed image.
-
-      We intentionally use 850 KB instead of 900 KB
-      to provide a safety margin.
-    */
-    const MAX_STORED_IMAGE_SIZE =
-      850 * 1024;
-
-
-    /*
-      Initial image dimensions.
-
-      This is MUCH larger than your old 120px setting.
-    */
-    const INITIAL_MAX_DIMENSION = 900;
-
-
-    /*
-      Absolute minimum dimension we allow.
-    */
-    const MIN_MAX_DIMENSION = 350;
-
-
+    /* APPLICATION STATE */
     let isTeacher = false;
-
     let currentSection = null;
-
     let currentTerm = 1;
-
     let activeEditingStudentId = null;
-
     let activeEditingSectionId = null;
 
-
-    /* ============================================================
-       DEFAULT STATE
-       ============================================================ */
-
-    let state = {
-
-      headingText:
-        "📐 Mathematics 7 Activity Hub",
-
-      banner:
-        "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&auto=format&fit=crop&q=60",
-
-      bannerY:
-        50,
-
-      sections:
-        [],
-
-      students:
-        [],
-
-      activities:
-        [],
-
-      completions:
-        {},
-
-      remarks:
-        {},
-
-      resources:
-        []
-
+    let mainConfig = {
+      headingText: "📐 Mathematics 7 Activity Hub",
+      banner: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&auto=format&fit=crop&q=60",
+      bannerY: 50
     };
 
+    let sections = [];
+    let currentStudents = [];
+    let currentActivities = [];
+    let currentResources = [];
 
-    /* ============================================================
-       FIRESTORE LIVE LISTENER
-       ============================================================ */
-
-    docRef.onSnapshot(
-
-      (doc) => {
-
+    /* REALTIME LISTENERS (MULTI-DOCUMENT) */
+    function initListeners() {
+      // 1. Listen to Global Config
+      db.collection('dashboard').doc('main_config').onSnapshot((doc) => {
         if (doc.exists) {
-
-          state =
-            Object.assign(
-              {},
-              state,
-              doc.data()
-            );
-
-          /*
-            Safety normalization.
-
-            These ensure old records that may be missing
-            certain arrays/objects don't break the website.
-          */
-
-          if (!Array.isArray(state.sections)) {
-            state.sections = [];
-          }
-
-          if (!Array.isArray(state.students)) {
-            state.students = [];
-          }
-
-          if (!Array.isArray(state.activities)) {
-            state.activities = [];
-          }
-
-          if (!state.completions) {
-            state.completions = {};
-          }
-
-          if (!state.remarks) {
-            state.remarks = {};
-          }
-
-          if (!Array.isArray(state.resources)) {
-            state.resources = [];
-          }
-
-          render();
-
+          mainConfig = Object.assign({}, mainConfig, doc.data());
+          renderHeader();
         } else {
-
-          saveState();
-
+          db.collection('dashboard').doc('main_config').set(mainConfig);
         }
-
-      },
-
-      (error) => {
-
-        console.error(
-          "Firestore Listener Error:",
-          error
-        );
-
-      }
-
-    );
-
-
-    /* ============================================================
-       SAVE STATE
-       ============================================================ */
-
-    async function saveState() {
-
-      try {
-
-        await docRef.set(state);
-
-        console.log(
-          "Saved successfully to Firestore:",
-          docRef.path
-        );
-
-        return true;
-
-      } catch (err) {
-
-        console.error(
-          "Firestore Save Error:",
-          err
-        );
-
-        alert(
-          "Failed to save changes.\n\n" +
-          (err.code || "") +
-          "\n" +
-          (err.message || err)
-        );
-
-        return false;
-
-      }
-
-    }
-
-
-    /* ============================================================
-       HTML ESCAPE
-       ============================================================ */
-
-    function escapeHtml(str) {
-
-      if (!str) return '';
-
-      return String(str)
-
-        .replace(/&/g, '&amp;')
-
-        .replace(/</g, '&lt;')
-
-        .replace(/>/g, '&gt;')
-
-        .replace(/"/g, '&quot;')
-
-        .replace(/'/g, '&#039;');
-
-    }
-
-
-    /* ============================================================
-       IMAGE COMPRESSION ENGINE
-       ============================================================ */
-
-    function processAndCompressImage(file) {
-
-      return new Promise(
-
-        (resolve, reject) => {
-
-          /*
-            Safety check.
-          */
-
-          if (!file) {
-
-            reject(
-              new Error("No image selected.")
-            );
-
-            return;
-          }
-
-
-          /*
-            Only allow actual image files.
-          */
-
-          if (
-            !file.type ||
-            !file.type.startsWith("image/")
-          ) {
-
-            reject(
-              new Error(
-                "Please select an image file."
-              )
-            );
-
-            return;
-          }
-
-
-          /*
-            Reject excessively large original files.
-          */
-
-          if (
-            file.size >
-            MAX_ORIGINAL_IMAGE_SIZE
-          ) {
-
-            reject(
-
-              new Error(
-
-                "The selected image is larger than 10 MB.\n\n" +
-                "Please choose a smaller photo."
-
-              )
-
-            );
-
-            return;
-
-          }
-
-
-          const reader =
-            new FileReader();
-
-
-          reader.onload =
-            function(event) {
-
-              const img =
-                new Image();
-
-
-              img.onload =
-                async function() {
-
-                  try {
-
-                    let maxDimension =
-                      INITIAL_MAX_DIMENSION;
-
-                    let quality =
-                      0.88;
-
-                    let blob = null;
-
-
-                    /*
-                      Try several compression levels.
-
-                      We prefer reducing dimensions only after
-                      quality has already reached a reasonable
-                      level.
-                    */
-
-                    for (
-                      let attempt = 0;
-                      attempt < 15;
-                      attempt++
-                    ) {
-
-
-                      let width =
-                        img.width;
-
-                      let height =
-                        img.height;
-
-
-                      /*
-                        Preserve aspect ratio.
-                      */
-
-                      if (width > height) {
-
-                        if (
-                          width >
-                          maxDimension
-                        ) {
-
-                          height =
-                            Math.round(
-                              height *
-                              maxDimension /
-                              width
-                            );
-
-                          width =
-                            maxDimension;
-
-                        }
-
-                      } else {
-
-                        if (
-                          height >
-                          maxDimension
-                        ) {
-
-                          width =
-                            Math.round(
-                              width *
-                              maxDimension /
-                              height
-                            );
-
-                          height =
-                            maxDimension;
-
-                        }
-
-                      }
-
-
-                      const canvas =
-                        document.createElement(
-                          "canvas"
-                        );
-
-
-                      canvas.width =
-                        width;
-
-                      canvas.height =
-                        height;
-
-
-                      const ctx =
-                        canvas.getContext(
-                          "2d",
-                          {
-                            alpha: false
-                          }
-                        );
-
-
-                      /*
-                        White background for transparent PNGs.
-                      */
-
-                      ctx.fillStyle =
-                        "#FFFFFF";
-
-                      ctx.fillRect(
-                        0,
-                        0,
-                        width,
-                        height
-                      );
-
-
-                      /*
-                        High quality image scaling.
-                      */
-
-                      ctx.imageSmoothingEnabled =
-                        true;
-
-                      ctx.imageSmoothingQuality =
-                        "high";
-
-
-                      ctx.drawImage(
-                        img,
-                        0,
-                        0,
-                        width,
-                        height
-                      );
-
-
-                      /*
-                        Convert to JPEG Blob.
-
-                        Blob is used instead of Base64.
-
-                        This is critical because the actual image
-                        will go into Firebase Storage.
-                      */
-
-                      blob =
-                        await new Promise(
-                          (resolveBlob) => {
-
-                            canvas.toBlob(
-
-                              resolveBlob,
-
-                              "image/jpeg",
-
-                              quality
-
-                            );
-
-                          }
-                        );
-
-
-                      if (!blob) {
-
-                        reject(
-                          new Error(
-                            "The browser could not process this image."
-                          )
-                        );
-
-                        return;
-
-                      }
-
-
-                      /*
-                        SUCCESS.
-
-                        The image is under 850 KB.
-                      */
-
-                      if (
-                        blob.size <=
-                        MAX_STORED_IMAGE_SIZE
-                      ) {
-
-                        resolve(blob);
-
-                        return;
-
-                      }
-
-
-                      /*
-                        Reduce quality first.
-
-                        We don't immediately destroy dimensions.
-                      */
-
-                      if (quality > 0.52) {
-
-                        quality -= 0.06;
-
-                      } else {
-
-                        /*
-                          Quality is already moderate.
-
-                          Reduce dimensions instead.
-                        */
-
-                        maxDimension =
-                          Math.round(
-                            maxDimension * 0.86
-                          );
-
-
-                        if (
-                          maxDimension <
-                          MIN_MAX_DIMENSION
-                        ) {
-
-                          break;
-
-                        }
-
-                      }
-
-                    }
-
-
-                    /*
-                      If we get here, image could not
-                      safely reach target size.
-                    */
-
-                    reject(
-
-                      new Error(
-
-                        "This image could not be compressed to a safe size.\n\n" +
-                        "Please choose another photo with a simpler background or smaller original size."
-
-                      )
-
-                    );
-
-
-                  } catch (error) {
-
-                    reject(error);
-
-                  }
-
-                };
-
-
-              img.onerror =
-                function() {
-
-                  reject(
-
-                    new Error(
-                      "The selected file is not a valid image."
-                    )
-
-                  );
-
-                };
-
-
-              img.src =
-                event.target.result;
-
-            };
-
-
-          reader.onerror =
-            function() {
-
-              reject(
-
-                new Error(
-                  "The browser could not read this image."
-                )
-
-              );
-
-            };
-
-
-          reader.readAsDataURL(file);
-
-        }
-
-      );
-
-    }
-
-
-    /* ============================================================
-       UPLOAD IMAGE TO FIREBASE STORAGE
-       ============================================================ */
-
-    async function uploadImageToStorage(
-      file,
-      folder,
-      identifier
-    ) {
-
-
-      /*
-        Compress first.
-      */
-
-      const compressedBlob =
-        await processAndCompressImage(file);
-
-
-      if (!compressedBlob) {
-
-        throw new Error(
-          "Image compression failed."
-        );
-
-      }
-
-
-      /*
-        Final client-side safety check.
-      */
-
-      if (
-        compressedBlob.size >
-        MAX_STORED_IMAGE_SIZE
-      ) {
-
-        throw new Error(
-
-          "Upload stopped because the processed image is still larger than 850 KB."
-
-        );
-
-      }
-
-
-      /*
-        Unique filename.
-
-        This prevents accidental overwriting.
-      */
-
-      const uniqueName =
-
-        identifier +
-        "_" +
-        Date.now() +
-        "_" +
-        Math.random()
-          .toString(36)
-          .substring(2, 8) +
-        ".jpg";
-
-
-      /*
-        Storage folder.
-
-        Firebase Storage will automatically organize
-        these files for us.
-
-        No need to create "Storage 1",
-        "Storage 2", etc.
-      */
-
-      const storagePath =
-
-        "classroom-photos/" +
-        folder +
-        "/" +
-        uniqueName;
-
-
-      const imageRef =
-        storageRoot.child(
-          storagePath
-        );
-
-
-      /*
-        Metadata.
-      */
-
-      const metadata = {
-
-        contentType:
-          "image/jpeg",
-
-        cacheControl:
-          "public,max-age=31536000"
-
-      };
-
-
-      /*
-        Upload actual image to Storage.
-      */
-
-      await imageRef.put(
-        compressedBlob,
-        metadata
-      );
-
-
-      /*
-        Get download URL.
-      */
-
-      const downloadURL =
-        await imageRef.getDownloadURL();
-
-
-      const storedSize =
-        compressedBlob.size;
-
-
-      console.log(
-        "Image uploaded:",
-        storagePath
-      );
-
-      console.log(
-        "Stored size:",
-        Math.round(
-          storedSize / 1024
-        ) +
-        " KB"
-      );
-
-
-      return {
-
-        url:
-          downloadURL,
-
-        path:
-          storagePath,
-
-        size:
-          storedSize
-
-      };
-
-    }
-
-
-    /* ============================================================
-       TEACHER MODE
-       ============================================================ */
-
-    function toggleMode() {
-
-      if (!isTeacher) {
-
-        const pass =
-          prompt(
-            "Enter Teacher Passcode:"
-          );
-
-
-        if (
-          pass ===
-          TEACHER_PASS
-        ) {
-
-          isTeacher = true;
-
-          document.body.classList.add(
-            'teacher-mode'
-          );
-
-
-          document.getElementById(
-            'mode-indicator'
-          ).className =
-            "mode-badge mode-teacher";
-
-
-          document.getElementById(
-            'mode-indicator'
-          ).innerText =
-            "✏️ Teacher Mode";
-
-
-          document.getElementById(
-            'toggle-mode-btn'
-          ).innerText =
-            "🔒 Exit Teacher Mode";
-
-
-          if (
-            document.getElementById(
-              'add-resource-btn'
-            )
-          ) {
-
-            document.getElementById(
-              'add-resource-btn'
-            ).style.display =
-              "block";
-
-          }
-
-        } else if (
-          pass !== null
-        ) {
-
-          alert(
-            "Incorrect Passcode!"
-          );
-
-        }
-
-      } else {
-
-        isTeacher = false;
-
-        document.body.classList.remove(
-          'teacher-mode'
-        );
-
-
-        document.getElementById(
-          'mode-indicator'
-        ).className =
-          "mode-badge mode-student";
-
-
-        document.getElementById(
-          'mode-indicator'
-        ).innerText =
-          "👀 Student View";
-
-
-        document.getElementById(
-          'toggle-mode-btn'
-        ).innerText =
-          "🔑 Teacher Login";
-
-
-        if (
-          document.getElementById(
-            'add-resource-btn'
-          )
-        ) {
-
-          document.getElementById(
-            'add-resource-btn'
-          ).style.display =
-            "none";
-
-        }
-
-      }
-
-
-      render();
-
-    }
-
-
-    /* ============================================================
-       EDIT HEADING
-       ============================================================ */
-
-    function editHeadingText() {
-
-      if (!isTeacher) return;
-
-
-      const current =
-        state.headingText ||
-        "📐 Mathematics 7 Activity Hub";
-
-
-      const updated =
-        prompt(
-          "Edit Main Hub Heading:",
-          current
-        );
-
-
-      if (
-        updated &&
-        updated.trim() !== ""
-      ) {
-
-        state.headingText =
-          updated.trim();
-
-        saveState();
-
-      }
-
-    }
-
-
-    /* ============================================================
-       BANNER POSITION
-       ============================================================ */
-
-    function adjustBannerY() {
-
-      if (!isTeacher) return;
-
-
-      const currentY =
-        state.bannerY !== undefined
-          ? state.bannerY
-          : 50;
-
-
-      const newY =
-        prompt(
-          "Enter vertical alignment percentage for banner (0 to 100):",
-          currentY
-        );
-
-
-      if (
-        newY !== null &&
-        !isNaN(newY)
-      ) {
-
-        state.bannerY =
-          Math.max(
-            0,
-            Math.min(
-              100,
-              Number(newY)
-            )
-          );
-
-
-        saveState();
-
-      }
-
-    }
-
-
-    /* ============================================================
-       MAIN RENDER
-       ============================================================ */
-
-    function render() {
-
-      if (currentSection) {
-
-        renderSectionTable();
-
-      } else {
-
-        renderHome();
-
-      }
-
-    }
-
-
-    /* ============================================================
-       HOME
-       ============================================================ */
-
-    function renderHome() {
-
-      const bannerEl =
-        document.getElementById(
-          'main-banner'
-        );
-
-
-      if (state.banner) {
-
-        bannerEl.style.backgroundImage =
-          `url('${state.banner}')`;
-
-      }
-
-
-      bannerEl.style.backgroundPositionY =
-        `${state.bannerY || 50}%`;
-
-
-      document.getElementById(
-        'banner-heading-text'
-      ).innerText =
-        state.headingText ||
-        "📐 Mathematics 7 Activity Hub";
-
-
-      const grid =
-        document.getElementById(
-          'sections-grid'
-        );
-
-
-      grid.innerHTML = '';
-
-
-      (
-        state.sections || []
-      ).forEach(
-
-        sec => {
-
-          const studentCount =
-            (
-              state.students || []
-            ).filter(
-              s =>
-                s.sectionId ===
-                sec.id
-            ).length;
-
-
-          const defaultCover =
-            "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=60";
-
-
-          const posY =
-            sec.coverY ||
-            50;
-
-
-          const card =
-            document.createElement(
-              'div'
-            );
-
-
-          card.className =
-            'section-card';
-
-
-          card.innerHTML = `
-
-            <div
-              class="card-cover"
-              style="
-                background-image: url('${sec.cover || defaultCover}');
-                background-position-y: ${posY}%;
-              "
-            >
-
-              <div class="card-actions">
-
-                <button
-                  class="action-badge-btn"
-                  onclick="renameSection(event, '${sec.id}')"
-                >
-                  ✏️ Name
-                </button>
-
-                <button
-                  class="action-badge-btn"
-                  onclick="triggerCoverChange(event, '${sec.id}')"
-                >
-                  📷 Cover
-                </button>
-
-                <button
-                  class="action-badge-btn"
-                  onclick="adjustCoverY(event, '${sec.id}')"
-                >
-                  ↕️ Frame
-                </button>
-
-                <button
-                  class="action-badge-btn"
-                  style="background:var(--danger);"
-                  onclick="deleteSection(event, '${sec.id}')"
-                >
-                  🗑️
-                </button>
-
-              </div>
-
-            </div>
-
-
-            <div class="card-body">
-
-              <div class="card-title">
-                ${escapeHtml(sec.name)}
-              </div>
-
-              <div class="card-meta">
-                👥 ${studentCount} Students Enrolled
-              </div>
-
-            </div>
-
-          `;
-
-
-          card.onclick =
-            (e) => {
-
-              if (
-                e.target.tagName !==
-                'BUTTON'
-              ) {
-
-                openSection(
-                  sec.id
-                );
-
-              }
-
-            };
-
-
-          grid.appendChild(card);
-
-        }
-
-      );
-
-    }
-
-
-    /* ============================================================
-       ADD SECTION
-       ============================================================ */
-
-    async function addSection() {
-
-      const nameInput =
-        document.getElementById(
-          'new-section-name'
-        );
-
-
-      const fileInput =
-        document.getElementById(
-          'new-section-cover-file'
-        );
-
-
-      const name =
-        nameInput.value.trim();
-
-
-      if (!name) {
-
-        alert(
-          "Please enter section name."
-        );
-
-        return;
-
-      }
-
-
-      let coverUrl = "";
-
-      let coverStoragePath = "";
-
-
-      try {
-
-
-        if (
-          fileInput.files &&
-          fileInput.files[0]
-        ) {
-
-
-          const result =
-            await uploadImageToStorage(
-
-              fileInput.files[0],
-
-              "covers",
-
-              "section_" +
-              Date.now()
-
-            );
-
-
-          coverUrl =
-            result.url;
-
-          coverStoragePath =
-            result.path;
-
-
-          alert(
-
-            "Section cover processed successfully.\n\n" +
-            "Stored size: " +
-            Math.round(
-              result.size / 1024
-            ) +
-            " KB"
-
-          );
-
-        }
-
-
-        if (
-          !state.sections
-        ) {
-
-          state.sections =
-            [];
-
-        }
-
-
-        state.sections.push({
-
-          id:
-            'sec_' +
-            Date.now(),
-
-          name:
-            name,
-
-          cover:
-            coverUrl,
-
-          coverStoragePath:
-            coverStoragePath,
-
-          coverY:
-            50
-
-        });
-
-
-        nameInput.value =
-          '';
-
-        fileInput.value =
-          '';
-
-
-        document.getElementById(
-          'section-cover-label'
-        ).innerText =
-          "📷 Upload Cover";
-
-
-        await saveState();
-
-
-      } catch (error) {
-
-
-        console.error(
-          "Section creation/upload failed:",
-          error
-        );
-
-
-        alert(
-
-          "The section was NOT added because the image could not be uploaded.\n\n" +
-          (error.message || error)
-
-        );
-
-      }
-
-    }
-
-
-    /* ============================================================
-       RENAME SECTION
-       ============================================================ */
-
-    function renameSection(
-      e,
-      secId
-    ) {
-
-      e.stopPropagation();
-
-
-      const sec =
-        state.sections.find(
-          s =>
-            s.id ===
-            secId
-        );
-
-
-      if (!sec) return;
-
-
-      const updated =
-        prompt(
-          "Rename section:",
-          sec.name
-        );
-
-
-      if (
-        updated &&
-        updated.trim() !== ""
-      ) {
-
-        sec.name =
-          updated.trim();
-
-        saveState();
-
-      }
-
-    }
-
-
-    /* ============================================================
-       ADJUST COVER
-       ============================================================ */
-
-    function adjustCoverY(
-      e,
-      secId
-    ) {
-
-      e.stopPropagation();
-
-
-      const sec =
-        state.sections.find(
-          s =>
-            s.id ===
-            secId
-        );
-
-
-      if (!sec) return;
-
-
-      const newY =
-        prompt(
-          "Enter cover frame alignment percentage (0-100):",
-          sec.coverY || 50
-        );
-
-
-      if (
-        newY !== null &&
-        !isNaN(newY)
-      ) {
-
-        sec.coverY =
-          Math.max(
-            0,
-            Math.min(
-              100,
-              Number(newY)
-            )
-          );
-
-
-        saveState();
-
-      }
-
-    }
-
-
-    /* ============================================================
-       DELETE SECTION
-       ============================================================ */
-
-    function deleteSection(
-      e,
-      secId
-    ) {
-
-      e.stopPropagation();
-
-
-      if (
-        !confirm(
-          "Are you sure you want to delete this section and all associated records?"
-        )
-      ) {
-
-        return;
-
-      }
-
-
-      state.sections =
-        state.sections.filter(
-          s =>
-            s.id !==
-            secId
-        );
-
-
-      state.students =
-        (
-          state.students || []
-        ).filter(
-          s =>
-            s.sectionId !==
-            secId
-        );
-
-
-      state.activities =
-        (
-          state.activities || []
-        ).filter(
-          a =>
-            a.sectionId !==
-            secId
-        );
-
-
-      state.resources =
-        (
-          state.resources || []
-        ).filter(
-          r =>
-            r.sectionId !==
-            secId
-        );
-
-
-      saveState();
-
-    }
-
-
-    /* ============================================================
-       ADD STUDENT
-       ============================================================ */
-
-    async function addStudent() {
-
-      if (!currentSection) return;
-
-
-      const nameInput =
-        document.getElementById(
-          'new-student-name'
-        );
-
-
-      const fileInput =
-        document.getElementById(
-          'new-student-avatar-file'
-        );
-
-
-      const name =
-        nameInput.value.trim();
-
-
-      if (!name) {
-
-        alert(
-          "Please enter student name."
-        );
-
-        return;
-
-      }
-
-
-      /*
-        Default avatar if no photo is selected.
-      */
-
-      let avatarUrl =
-
-        "https://api.dicebear.com/7.x/bottts/svg?seed=" +
-
-        encodeURIComponent(name);
-
-
-      let avatarStoragePath =
-        "";
-
-
-      try {
-
-
-        /*
-          Upload photo to Storage FIRST.
-
-          If this fails, student will NOT be added.
-        */
-
-        if (
-          fileInput.files &&
-          fileInput.files[0]
-        ) {
-
-
-          const result =
-
-            await uploadImageToStorage(
-
-              fileInput.files[0],
-
-              "avatars",
-
-              "student_" +
-              Date.now()
-
-            );
-
-
-          avatarUrl =
-            result.url;
-
-
-          avatarStoragePath =
-            result.path;
-
-
-          alert(
-
-            "Photo processed successfully.\n\n" +
-            "Stored size: " +
-            Math.round(
-              result.size / 1024
-            ) +
-            " KB"
-
-          );
-
-        }
-
-
-        if (
-          !state.students
-        ) {
-
-          state.students =
-            [];
-
-        }
-
-
-        state.students.push({
-
-          id:
-            Date.now(),
-
-          sectionId:
-            currentSection.id,
-
-          name:
-            name,
-
-          /*
-            Firestore stores ONLY this small URL.
-          */
-
-          avatar:
-            avatarUrl,
-
-          /*
-            Useful if we ever want to delete
-            or replace the Storage file later.
-          */
-
-          avatarStoragePath:
-            avatarStoragePath
-
-        });
-
-
-        nameInput.value =
-          '';
-
-        fileInput.value =
-          '';
-
-
-        document.getElementById(
-          'student-avatar-label'
-        ).innerText =
-          "👤 Photo (Optional)";
-
-
-        /*
-          Save only the metadata to Firestore.
-        */
-
-        await saveState();
-
-
-      } catch (error) {
-
-
-        console.error(
-          "Student photo upload failed:",
-          error
-        );
-
-
-        /*
-          Existing data remains untouched.
-        */
-
-        alert(
-
-          "The student was NOT added because the photo could not be uploaded.\n\n" +
-          (error.message || error)
-
-        );
-
-      }
-
-    }
-
-
-    /* ============================================================
-       EDIT STUDENT NAME
-       ============================================================ */
-
-    function editStudentName(
-      studentId
-    ) {
-
-      if (!isTeacher) return;
-
-
-      const student =
-        state.students.find(
-          s =>
-            s.id ===
-            studentId
-        );
-
-
-      if (!student) return;
-
-
-      const updated =
-        prompt(
-          "Edit student name:",
-          student.name
-        );
-
-
-      if (
-        updated &&
-        updated.trim() !== ""
-      ) {
-
-        student.name =
-          updated.trim();
-
-        saveState();
-
-      }
-
-    }
-
-
-    /* ============================================================
-       DELETE STUDENT
-       ============================================================ */
-
-    function deleteStudent(
-      studentId
-    ) {
-
-      if (
-        !confirm(
-          "Remove this student?"
-        )
-      ) {
-
-        return;
-
-      }
-
-
-      state.students =
-        state.students.filter(
-          s =>
-            s.id !==
-            studentId
-        );
-
-
-      saveState();
-
-    }
-
-
-    /* ============================================================
-       CHANGE STUDENT AVATAR
-       ============================================================ */
-
-    function triggerAvatarChange(
-      studentId
-    ) {
-
-      if (!isTeacher) return;
-
-
-      activeEditingStudentId =
-        studentId;
-
-
-      document.getElementById(
-        'global-avatar-picker'
-      ).click();
-
-    }
-
-
-    /* ============================================================
-       HANDLE NEW STUDENT PHOTO
-       ============================================================ */
-
-    async function handleAvatarFileSelect(e) {
-
-      const file =
-        e.target.files[0];
-
-
-      if (
-        !file ||
-        !activeEditingStudentId
-      ) {
-
-        return;
-
-      }
-
-
-      try {
-
-
-        const student =
-          state.students.find(
-            s =>
-              s.id ===
-              activeEditingStudentId
-          );
-
-
-        if (!student) {
-
-          throw new Error(
-            "Student record could not be found."
-          );
-
-        }
-
-
-        /*
-          Upload new photo.
-
-          Existing photo URL remains untouched
-          until the new upload succeeds.
-        */
-
-        const result =
-
-          await uploadImageToStorage(
-
-            file,
-
-            "avatars",
-
-            "student_" +
-            student.id
-
-          );
-
-
-        /*
-          Only update Firestore after
-          successful Storage upload.
-        */
-
-        student.avatar =
-          result.url;
-
-
-        student.avatarStoragePath =
-          result.path;
-
-
-        const saved =
-          await saveState();
-
-
-        if (saved) {
-
-          alert(
-
-            "Profile photo updated successfully.\n\n" +
-            "Stored size: " +
-            Math.round(
-              result.size / 1024
-            ) +
-            " KB"
-
-          );
-
-        }
-
-
-      } catch (error) {
-
-
-        console.error(
-          "Avatar upload failed:",
-          error
-        );
-
-
-        alert(
-
-          "The profile photo was NOT changed.\n\n" +
-          (error.message || error)
-
-        );
-
-
-      } finally {
-
-
-        activeEditingStudentId =
-          null;
-
-
-        e.target.value =
-          "";
-
-      }
-
-    }
-
-
-    /* ============================================================
-       BANNER UPLOAD
-       ============================================================ */
-
-    async function handleBannerFileSelect(e) {
-
-      const file =
-        e.target.files[0];
-
-
-      if (!file) return;
-
-
-      try {
-
-
-        const result =
-
-          await uploadImageToStorage(
-
-            file,
-
-            "banners",
-
-            "main_banner"
-
-          );
-
-
-        state.banner =
-          result.url;
-
-
-        state.bannerStoragePath =
-          result.path;
-
-
-        const saved =
-          await saveState();
-
-
-        if (saved) {
-
-          alert(
-
-            "Banner uploaded successfully.\n\n" +
-            "Stored size: " +
-            Math.round(
-              result.size / 1024
-            ) +
-            " KB"
-
-          );
-
-        }
-
-
-      } catch (error) {
-
-
-        console.error(
-          "Banner upload failed:",
-          error
-        );
-
-
-        alert(
-
-          "Banner upload failed.\n\n" +
-          (error.message || error)
-
-        );
-
-
-      } finally {
-
-
-        e.target.value =
-          "";
-
-      }
-
-    }
-
-
-    /* ============================================================
-       TRIGGER SECTION COVER
-       ============================================================ */
-
-    function triggerCoverChange(
-      e,
-      secId
-    ) {
-
-      e.stopPropagation();
-
-
-      activeEditingSectionId =
-        secId;
-
-
-      document.getElementById(
-        'global-cover-picker'
-      ).click();
-
-    }
-
-
-    /* ============================================================
-       HANDLE SECTION COVER
-       ============================================================ */
-
-    async function handleCoverFileSelect(e) {
-
-      const file =
-        e.target.files[0];
-
-
-      if (
-        !file ||
-        !activeEditingSectionId
-      ) {
-
-        return;
-
-      }
-
-
-      try {
-
-
-        const result =
-
-          await uploadImageToStorage(
-
-            file,
-
-            "covers",
-
-            "section_" +
-            activeEditingSectionId
-
-          );
-
-
-        const sec =
-          state.sections.find(
-            s =>
-              s.id ===
-              activeEditingSectionId
-          );
-
-
-        if (!sec) {
-
-          throw new Error(
-            "Section could not be found."
-          );
-
-        }
-
-
-        sec.cover =
-          result.url;
-
-
-        sec.coverStoragePath =
-          result.path;
-
-
-        const saved =
-          await saveState();
-
-
-        if (saved) {
-
-          alert(
-
-            "Section cover uploaded successfully.\n\n" +
-            "Stored size: " +
-            Math.round(
-              result.size / 1024
-            ) +
-            " KB"
-
-          );
-
-        }
-
-
-      } catch (error) {
-
-
-        console.error(
-          "Cover upload failed:",
-          error
-        );
-
-
-        alert(
-
-          "Section cover upload failed.\n\n" +
-          (error.message || error)
-
-        );
-
-
-      } finally {
-
-
-        activeEditingSectionId =
-          null;
-
-
-        e.target.value =
-          "";
-
-      }
-
-    }
-
-
-    /* ============================================================
-       ASSIGN ACTIVITY
-       ============================================================ */
-
-    function assignActivity() {
-
-      if (!currentSection) return;
-
-
-      const label =
-        document.getElementById(
-          'new-act-label'
-        ).value.trim();
-
-
-      const title =
-        document.getElementById(
-          'new-act-title'
-        ).value.trim();
-
-
-      const date =
-        document.getElementById(
-          'new-act-date'
-        ).value;
-
-
-      const link =
-        document.getElementById(
-          'new-act-link'
-        ).value.trim();
-
-
-      const token =
-        document.getElementById(
-          'new-act-token'
-        ).value;
-
-
-      const desc =
-        document.getElementById(
-          'new-act-desc'
-        ).value.trim();
-
-
-      if (!title) {
-
-        alert(
-          "Please enter an activity title."
-        );
-
-        return;
-
-      }
-
-
-      if (!state.activities) {
-
-        state.activities =
-          [];
-
-      }
-
-
-      state.activities.push({
-
-        id:
-          'act_' +
-          Date.now(),
-
-        sectionId:
-          currentSection.id,
-
-        term:
-          currentTerm,
-
-        label:
-          label ||
-          'Act #' +
-          (state.activities.length + 1),
-
-        title:
-          title,
-
-        date:
-          date,
-
-        link:
-          link,
-
-        token:
-          token,
-
-        desc:
-          desc
-
       });
 
-
-      document.getElementById(
-        'new-act-title'
-      ).value =
-        '';
-
-
-      document.getElementById(
-        'new-act-link'
-      ).value =
-        '';
-
-
-      document.getElementById(
-        'new-act-desc'
-      ).value =
-        '';
-
-
-      saveState();
-
+      // 2. Listen to Sections List
+      db.collection('sections').onSnapshot((snapshot) => {
+        sections = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderHomeSections();
+      });
     }
 
+    function listenToActiveSection(sectionId) {
+      if (!sectionId) return;
 
-    /* ============================================================
-       EDIT ACTIVITY
-       ============================================================ */
+      // Listen to Activities for Section
+      db.collection('sections').doc(sectionId).collection('activities')
+        .onSnapshot((snapshot) => {
+          currentActivities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderSectionTable();
+        });
 
-    function editActivity(
-      actId
-    ) {
+      // Listen to Students for Section (Supports > 60 Students via Chunks/Docs)
+      db.collection('sections').doc(sectionId).collection('students')
+        .onSnapshot((snapshot) => {
+          currentStudents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderSectionTable();
+        });
 
-      const act =
-        state.activities.find(
-          a =>
-            a.id ===
-            actId
-        );
-
-
-      if (!act) return;
-
-
-      const label =
-        prompt(
-          "Edit Activity Header Label:",
-          act.label
-        ) ??
-        act.label;
-
-
-      const title =
-        prompt(
-          "Edit Activity Title:",
-          act.title
-        ) ??
-        act.title;
-
-
-      const desc =
-        prompt(
-          "Edit Description:",
-          act.desc
-        ) ??
-        act.desc;
-
-
-      const link =
-        prompt(
-          "Edit Attachment/Drive Link:",
-          act.link
-        ) ??
-        act.link;
-
-
-      act.label =
-        label.trim();
-
-
-      act.title =
-        title.trim();
-
-
-      act.desc =
-        desc.trim();
-
-
-      act.link =
-        link.trim();
-
-
-      saveState();
-
+      // Listen to Resources
+      db.collection('sections').doc(sectionId).collection('resources')
+        .onSnapshot((snapshot) => {
+          currentResources = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderResources();
+        });
     }
 
-
-    /* ============================================================
-       DELETE ACTIVITY
-       ============================================================ */
-
-    function deleteActivity(
-      actId
-    ) {
-
-      if (
-        !confirm(
-          "Are you sure you want to delete this activity task?"
-        )
-      ) {
-
-        return;
-
-      }
-
-
-      state.activities =
-        state.activities.filter(
-          a =>
-            a.id !==
-            actId
-        );
-
-
-      saveState();
-
-    }
-
-
-    /* ============================================================
-       TOKEN
-       ============================================================ */
-
-    function toggleToken(
-      studentId,
-      actId
-    ) {
-
-      if (!isTeacher) return;
-
-
-      const key =
-        `${studentId}_${actId}`;
-
-
-      if (!state.completions) {
-
-        state.completions =
-          {};
-
-      }
-
-
-      state.completions[key] =
-        !state.completions[key];
-
-
-      saveState();
-
-    }
-
-
-    /* ============================================================
-       REMARK
-       ============================================================ */
-
-    function editRemark(
-      studentId
-    ) {
-
-      if (!isTeacher) return;
-
-
-      const remarkKey =
-        `${studentId}_term${currentTerm}`;
-
-
-      const current =
-        (
-          state.remarks || {}
-        )[remarkKey] ||
-        "";
-
-
-      const updated =
-        prompt(
-          "Enter Student Status/Remark:",
-          current
-        );
-
-
-      if (
-        updated !== null
-      ) {
-
-
-        if (!state.remarks) {
-
-          state.remarks =
-            {};
-
+    /* IMAGE COMPRESSION & UPLOAD ENGINE */
+    function processAndCompressImage(file) {
+      return new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith("image/")) {
+          reject(new Error("Please select a valid image file."));
+          return;
         }
 
-
-        state.remarks[
-          remarkKey
-        ] =
-          updated.trim();
-
-
-        saveState();
-
-      }
-
-    }
-
-
-    /* ============================================================
-       OPEN SECTION
-       ============================================================ */
-
-    function openSection(
-      secId
-    ) {
-
-      currentSection =
-        (
-          state.sections || []
-        ).find(
-          s =>
-            s.id ===
-            secId
-        );
-
-
-      document.getElementById(
-        'home-view'
-      ).style.display =
-        'none';
-
-
-      document.getElementById(
-        'section-view'
-      ).style.display =
-        'block';
-
-
-      document.getElementById(
-        'breadcrumb'
-      ).style.display =
-        'flex';
-
-
-      document.getElementById(
-        'form-section-controls'
-      ).style.display =
-        'grid';
-
-
-      document.getElementById(
-        'active-section-title'
-      ).innerText =
-        currentSection
-          ? currentSection.name
-          : '';
-
-
-      if (
-        isTeacher &&
-        document.getElementById(
-          'add-resource-btn'
-        )
-      ) {
-
-        document.getElementById(
-          'add-resource-btn'
-        ).style.display =
-          "block";
-
-      }
-
-
-      switchTerm(1);
-
-    }
-
-
-    /* ============================================================
-       SHOW HOME
-       ============================================================ */
-
-    function showHome() {
-
-      currentSection =
-        null;
-
-
-      document.getElementById(
-        'home-view'
-      ).style.display =
-        'block';
-
-
-      document.getElementById(
-        'section-view'
-      ).style.display =
-        'none';
-
-
-      document.getElementById(
-        'breadcrumb'
-      ).style.display =
-        'none';
-
-
-      document.getElementById(
-        'form-section-controls'
-      ).style.display =
-        'none';
-
-
-      renderHome();
-
-    }
-
-
-    /* ============================================================
-       SWITCH TERM
-       ============================================================ */
-
-    function switchTerm(
-      termNumber
-    ) {
-
-      currentTerm =
-        termNumber;
-
-
-      [1, 2, 3].forEach(
-
-        t => {
-
-          const btn =
-            document.getElementById(
-              `term-${t}-btn`
-            );
-
-
-          if (
-            t ===
-            termNumber
-          ) {
-
-            btn.classList.add(
-              'active'
-            );
-
-          } else {
-
-            btn.classList.remove(
-              'active'
-            );
-
-          }
-
+        if (file.size > MAX_ORIGINAL_IMAGE_SIZE) {
+          reject(new Error("Selected image exceeds maximum allowed 10 MB size."));
+          return;
         }
 
-      );
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = async () => {
+            let maxDimension = INITIAL_MAX_DIMENSION;
+            let quality = 0.85;
+            let blob = null;
 
+            for (let attempt = 0; attempt < 10; attempt++) {
+              let width = img.width;
+              let height = img.height;
 
-      renderSectionTable();
+              if (width > height) {
+                if (width > maxDimension) {
+                  height = Math.round((height * maxDimension) / width);
+                  width = maxDimension;
+                }
+              } else {
+                if (height > maxDimension) {
+                  width = Math.round((width * maxDimension) / height);
+                  height = maxDimension;
+                }
+              }
 
+              const canvas = document.createElement("canvas");
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext("2d", { alpha: false });
+
+              ctx.fillStyle = "#FFFFFF";
+              ctx.fillRect(0, 0, width, height);
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = "high";
+              ctx.drawImage(img, 0, 0, width, height);
+
+              blob = await new Promise((res) => canvas.toBlob(res, "image/jpeg", quality));
+
+              if (blob && blob.size <= MAX_STORED_IMAGE_SIZE) break;
+
+              quality -= 0.1;
+              if (quality < 0.5) {
+                quality = 0.75;
+                maxDimension = Math.max(MIN_MAX_DIMENSION, maxDimension - 100);
+              }
+            }
+            resolve(blob);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
     }
 
-
-    /* ============================================================
-       FILE LABEL
-       ============================================================ */
-
-    function updateLabel(
-      input,
-      labelId
-    ) {
-
-      if (
-        input.files &&
-        input.files[0]
-      ) {
-
-        document.getElementById(
-          labelId
-        ).innerText =
-
-          "📷 " +
-          input.files[0].name;
-
-      }
-
+    async function uploadImageToStorage(file, path) {
+      const compressedBlob = await processAndCompressImage(file);
+      const storageRef = storage.ref(path);
+      await storageRef.put(compressedBlob);
+      return await storageRef.getDownloadURL();
     }
 
+    /* UI RENDERING LOGIC */
+    function renderHeader() {
+      document.getElementById('banner-heading-text').innerText = mainConfig.headingText;
+      const bannerEl = document.getElementById('main-banner');
+      bannerEl.style.backgroundImage = `url('${mainConfig.banner}')`;
+      bannerEl.style.backgroundPositionY = `${mainConfig.bannerY}%`;
+    }
 
-    /* ============================================================
-       RENDER SECTION TABLE
-       ============================================================ */
+    function renderHomeSections() {
+      const grid = document.getElementById('sections-grid');
+      grid.innerHTML = sections.map(sec => `
+        <div class="section-card" onclick="openSection('${sec.id}')">
+          <div class="card-cover" style="background-image: url('${sec.cover || ''}')">
+            <div class="card-actions">
+              <button class="action-badge-btn" onclick="event.stopPropagation(); triggerCoverEdit('${sec.id}')">📷 Change Cover</button>
+              <button class="action-badge-btn" style="background:var(--danger)" onclick="event.stopPropagation(); deleteSection('${sec.id}')">🗑️ Delete</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">${escapeHtml(sec.name)}</div>
+            <div class="card-meta">Click to view activities and students</div>
+          </div>
+        </div>
+      `).join('');
+    }
 
     function renderSectionTable() {
-
       if (!currentSection) return;
 
-
-      const headerRow =
-        document.getElementById(
-          'table-header'
-        );
-
-
-      const tbody =
-        document.getElementById(
-          'table-body'
-        );
-
-
-      const students =
-        (
-          state.students || []
-        ).filter(
-          s =>
-            s.sectionId ===
-            currentSection.id
-        );
-
-
-      const activities =
-        (
-          state.activities || []
-        ).filter(
-
-          a =>
-
-            a.sectionId ===
-            currentSection.id &&
-
-            (
-              a.term ===
-              currentTerm ||
-
-              (
-                !a.term &&
-                currentTerm === 1
-              )
-            )
-
-        );
-
-
-      let headerHtml =
-        `<th>Student</th>`;
-
-
-      activities.forEach(
-
-        (act, idx) => {
-
-
-          const actLabel =
-            act.label ||
-            `Act #${idx + 1}`;
-
-
-          const dateBadge =
-            act.date
-
-              ? `
-                <div
-                  style="
-                    font-size:0.65rem;
-                    color:var(--muted);
-                    font-weight:600;
-                  "
-                >
-                  📅 ${act.date}
-                </div>
-              `
-
-              : '';
-
-
-          const teacherControls =
-            isTeacher
-
-              ? `
-                <div style="margin-top:2px;">
-
-                  <button
-                    class="icon-btn-sm"
-                    onclick="editActivity('${act.id}')"
-                  >
-                    ✏️
-                  </button>
-
-                  <button
-                    class="icon-btn-sm"
-                    style="color:var(--danger);"
-                    onclick="deleteActivity('${act.id}')"
-                  >
-                    🗑️
-                  </button>
-
-                </div>
-              `
-
-              : '';
-
-
-          headerHtml += `
-
-            <th>
-
-              <div
-                class="act-header-wrapper"
-                onclick="openModal('${act.id}')"
-              >
-
-                <div
-                  style="
-                    font-weight:bold;
-                    font-size:0.75rem;
-                    color:var(--text);
-                  "
-                >
-                  ${escapeHtml(actLabel)} 🔍
-                </div>
-
-                <div
-                  class="act-title-text"
-                  title="${escapeHtml(act.title)}"
-                >
-                  ${escapeHtml(act.title)}
-                </div>
-
-                ${dateBadge}
-
-              </div>
-
-              ${teacherControls}
-
-            </th>
-
-          `;
-
-        }
-
-      );
-
-
-      headerHtml +=
-        `<th>Status</th>`;
-
-
-      headerRow.innerHTML =
-        headerHtml;
-
-
-      tbody.innerHTML =
-        '';
-
-
-      students.forEach(
-
-        student => {
-
-
-          const tr =
-            document.createElement(
-              'tr'
-            );
-
-
-          const deleteStudentBtn =
-            isTeacher
-
-              ? `
-                <button
-                  class="icon-btn-sm"
-                  style="color:var(--danger);"
-                  onclick="deleteStudent(${student.id})"
-                >
-                  🗑️
-                </button>
-              `
-
-              : '';
-
-
-          /*
-            Existing old students may still have
-            Base64 avatars.
-
-            The browser can still display them.
-
-            New photos will use Firebase Storage.
-          */
-
-          const avatarSrc =
-            student.avatar ||
-            (
-              "https://api.dicebear.com/7.x/bottts/svg?seed=" +
-              encodeURIComponent(
-                student.name
-              )
-            );
-
-
-          let studentCell = `
-
+      const filteredActs = currentActivities.filter(a => (a.term || 1) == currentTerm);
+      const headerTr = document.getElementById('table-header');
+      headerTr.innerHTML = `
+        <th>Student</th>
+        <th>Status</th>
+        ${filteredActs.map(act => `
+          <th>
+            <div class="act-header-wrapper" onclick="openActModal('${act.id}')">
+              <div>${escapeHtml(act.label)}</div>
+              <div class="act-title-text">${escapeHtml(act.title)}</div>
+            </div>
+          </th>
+        `).join('')}
+      `;
+
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = currentStudents.map(student => {
+        const completions = student.completions || {};
+        return `
+          <tr>
             <td>
-
               <div class="student-info">
-
-                <img
-                  src="${avatarSrc}"
-                  class="avatar"
-                  onclick="triggerAvatarChange(${student.id})"
-                  title="Click to upload profile photo"
-                  onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(student.name)}'"
-                />
-
-                <div
-                  style="
-                    flex:1;
-                    min-width:0;
-                  "
-                >
-
-                  <strong
-                    class="student-name"
-                    onclick="editStudentName(${student.id})"
-                  >
-                    ${escapeHtml(student.name)}
-                  </strong>
-
-                </div>
-
-                ${deleteStudentBtn}
-
+                <img class="avatar" src="${student.avatar || 'https://via.placeholder.com/30'}" onclick="triggerAvatarEdit('${student.id}')" />
+                <span class="student-name" onclick="editStudentName('${student.id}', '${escapeHtml(student.name)}')">${escapeHtml(student.name)}</span>
               </div>
-
             </td>
-
-          `;
-
-
-          const taskCells =
-            activities.map(
-
-              act => {
-
-
-                const key =
-                  `${student.id}_${act.id}`;
-
-
-                const isDone =
-                  !!(
-                    state.completions || {}
-                  )[key];
-
-
-                return `
-
-                  <td>
-
-                    <button
-                      class="token-btn ${isDone ? '' : 'empty'}"
-                      onclick="toggleToken(${student.id}, '${act.id}')"
-                      ${!isTeacher ? 'disabled' : ''}
-                    >
-                      ${act.token}
-                    </button>
-
-                  </td>
-
-                `;
-
-              }
-
-            ).join('');
-
-
-          const remarkKey =
-            `${student.id}_term${currentTerm}`;
-
-
-          const currentRemark =
-
-            (
-              state.remarks || {}
-            )[remarkKey] ||
-
-            (
-              isTeacher
-                ? "Click to edit"
-                : "—"
-            );
-
-
-          let statusCell = `
-
-            <td
-              class="status-cell"
-              onclick="editRemark(${student.id})"
-            >
-
-              <em>
-                ${escapeHtml(currentRemark)}
-              </em>
-
+            <td class="status-cell" onclick="editStudentRemark('${student.id}', '${escapeHtml(student.remarks || '')}')">
+              ${escapeHtml(student.remarks || 'Good Standing')}
             </td>
-
-          `;
-
-
-          tr.innerHTML =
-
-            studentCell +
-            taskCells +
-            statusCell;
-
-
-          tbody.appendChild(
-            tr
-          );
-
-        }
-
-      );
-
-
-      renderResources();
-
+            ${filteredActs.map(act => {
+              const isDone = completions[act.id];
+              return `
+                <td>
+                  <button class="token-btn ${isDone ? '' : 'empty'}" 
+                          ${!isTeacher ? 'disabled' : ''} 
+                          onclick="toggleToken('${student.id}', '${act.id}', ${!isDone})">
+                    ${act.token || '⭐'}
+                  </button>
+                </td>
+              `;
+            }).join('')}
+          </tr>
+        `;
+      }).join('');
     }
-
-
-    /* ============================================================
-       RESOURCES
-       ============================================================ */
 
     function renderResources() {
-
-      const list =
-        document.getElementById(
-          'resources-list'
-        );
-
-
-      list.innerHTML =
-        '';
-
-
-      const sectionResources =
-
-        (
-          state.resources || []
-        ).filter(
-          r =>
-            r.sectionId ===
-            currentSection.id
-        );
-
-
-      if (
-        sectionResources.length ===
-        0
-      ) {
-
-        list.innerHTML = `
-
-          <p
-            style="
-              font-size:0.85rem;
-              color:var(--muted);
-              margin-top:0.5rem;
-              font-style:italic;
-            "
-          >
-            No notes or lesson attachments posted yet.
-          </p>
-
-        `;
-
-        return;
-
-      }
-
-
-      sectionResources.forEach(
-
-        res => {
-
-
-          const deleteBtn =
-
-            isTeacher
-
-              ? `
-                <button
-                  class="icon-btn-sm"
-                  style="color:var(--danger);"
-                  onclick="deleteResource('${res.id}')"
-                >
-                  🗑️ Remove
-                </button>
-              `
-
-              : '';
-
-
-          const linkBtn =
-
-            res.link
-
-              ? `
-                <a
-                  href="${escapeHtml(res.link)}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="btn btn-secondary"
-                  style="
-                    font-size:0.75rem;
-                    padding:0.3rem 0.6rem;
-                  "
-                >
-                  📎 Open Link
-                </a>
-              `
-
-              : '';
-
-
-          const item =
-            document.createElement(
-              'div'
-            );
-
-
-          item.className =
-            'resource-card';
-
-
-          item.innerHTML = `
-
-            <div>
-
-              <div
-                style="
-                  font-weight:bold;
-                  font-size:0.95rem;
-                "
-              >
-                ${escapeHtml(res.title)}
-              </div>
-
-              <div
-                style="
-                  font-size:0.8rem;
-                  color:var(--muted);
-                  margin-top:0.2rem;
-                "
-              >
-                ${escapeHtml(res.desc || '')}
-              </div>
-
-            </div>
-
-            <div
-              style="
-                display:flex;
-                align-items:center;
-                gap:0.5rem;
-              "
-            >
-
-              ${linkBtn}
-
-              ${deleteBtn}
-
-            </div>
-
-          `;
-
-
-          list.appendChild(
-            item
-          );
-
-        }
-
-      );
-
+      const container = document.getElementById('resources-list');
+      container.innerHTML = currentResources.map(res => `
+        <div class="resource-card">
+          <div>
+            <strong>${escapeHtml(res.title)}</strong>
+            <p style="font-size:0.8rem; color:var(--muted);">${escapeHtml(res.desc || '')}</p>
+          </div>
+          <a href="${res.link}" target="_blank" class="btn" style="text-decoration:none; font-size:0.8rem;">Open File</a>
+        </div>
+      `).join('');
     }
 
-
-    /* ============================================================
-       ADD RESOURCE
-       ============================================================ */
-
-    function addResource() {
-
-      if (!currentSection) return;
-
-
-      const title =
-        prompt(
-          "Enter Resource Title:"
-        );
-
-
-      if (!title) return;
-
-
-      const desc =
-        prompt(
-          "Enter Description/Notes:"
-        ) ||
-        "";
-
-
-      const link =
-        prompt(
-          "Enter Resource/Module URL Link:"
-        ) ||
-        "";
-
-
-      if (!state.resources) {
-
-        state.resources =
-          [];
-
+    /* ACTIONS & HANDLERS */
+    function toggleMode() {
+      if (!isTeacher) {
+        const pass = prompt("Enter Teacher Password:");
+        if (pass === TEACHER_PASS) {
+          isTeacher = true;
+          document.body.classList.add('teacher-mode');
+          document.getElementById('mode-indicator').className = "mode-badge mode-teacher";
+          document.getElementById('mode-indicator').innerText = "✏️ Teacher Mode";
+          document.getElementById('toggle-mode-btn').innerText = "🔒 Logout";
+          document.getElementById('add-resource-btn').style.display = "inline-block";
+        } else alert("Incorrect password!");
+      } else {
+        isTeacher = false;
+        document.body.classList.remove('teacher-mode');
+        document.getElementById('mode-indicator').className = "mode-badge mode-student";
+        document.getElementById('mode-indicator').innerText = "👀 Student View";
+        document.getElementById('toggle-mode-btn').innerText = "🔑 Teacher Login";
+        document.getElementById('add-resource-btn').style.display = "none";
       }
+      renderSectionTable();
+    }
 
+    function openSection(id) {
+      currentSection = sections.find(s => s.id === id);
+      document.getElementById('home-view').style.display = 'none';
+      document.getElementById('section-view').style.display = 'block';
+      document.getElementById('breadcrumb').style.display = 'flex';
+      document.getElementById('form-section-controls').style.display = 'grid';
+      document.getElementById('form-add-section').style.display = 'none';
+      document.getElementById('active-section-title').innerText = currentSection.name;
+      listenToActiveSection(id);
+    }
 
-      state.resources.push({
+    function showHome() {
+      currentSection = null;
+      document.getElementById('home-view').style.display = 'block';
+      document.getElementById('section-view').style.display = 'none';
+      document.getElementById('breadcrumb').style.display = 'none';
+      document.getElementById('form-section-controls').style.display = 'none';
+      document.getElementById('form-add-section').style.display = 'grid';
+    }
 
-        id:
-          'res_' +
-          Date.now(),
+    async function addSection() {
+      const name = document.getElementById('new-section-name').value.trim();
+      const file = document.getElementById('new-section-cover-file').files[0];
+      if (!name) return alert("Please enter section name.");
 
-        sectionId:
-          currentSection.id,
+      let coverUrl = "";
+      if (file) coverUrl = await uploadImageToStorage(file, `covers/${Date.now()}_${file.name}`);
 
-        title:
-          title.trim(),
+      await db.collection('sections').add({ name, cover: coverUrl });
+      document.getElementById('new-section-name').value = '';
+    }
 
-        desc:
-          desc.trim(),
+    async function addStudent() {
+      if (!currentSection) return;
+      const name = document.getElementById('new-student-name').value.trim();
+      const file = document.getElementById('new-student-avatar-file').files[0];
+      if (!name) return alert("Please enter student name.");
 
-        link:
-          link.trim()
+      let avatarUrl = "";
+      if (file) avatarUrl = await uploadImageToStorage(file, `avatars/${Date.now()}_${file.name}`);
 
+      await db.collection('sections').doc(currentSection.id).collection('students').add({
+        name,
+        avatar: avatarUrl,
+        completions: {},
+        remarks: "Good Standing"
+      });
+      document.getElementById('new-student-name').value = '';
+    }
+
+    async function assignActivity() {
+      if (!currentSection) return;
+      const label = document.getElementById('new-act-label').value.trim();
+      const title = document.getElementById('new-act-title').value.trim();
+      const date = document.getElementById('new-act-date').value;
+      const link = document.getElementById('new-act-link').value.trim();
+      const token = document.getElementById('new-act-token').value;
+      const desc = document.getElementById('new-act-desc').value.trim();
+
+      if (!title) return alert("Enter activity title.");
+
+      await db.collection('sections').doc(currentSection.id).collection('activities').add({
+        label, title, date, link, token, desc, term: currentTerm
       });
 
-
-      saveState();
-
+      document.getElementById('new-act-title').value = '';
+      document.getElementById('new-act-desc').value = '';
     }
 
-
-    /* ============================================================
-       DELETE RESOURCE
-       ============================================================ */
-
-    function deleteResource(
-      resId
-    ) {
-
-      if (
-        !confirm(
-          "Delete this learning resource?"
-        )
-      ) {
-
-        return;
-
-      }
-
-
-      state.resources =
-        state.resources.filter(
-          r =>
-            r.id !==
-            resId
-        );
-
-
-      saveState();
-
+    async function toggleToken(studentId, actId, status) {
+      if (!isTeacher) return;
+      await db.collection('sections').doc(currentSection.id)
+        .collection('students').doc(studentId)
+        .update({ [`completions.${actId}`]: status });
     }
 
+    function switchTerm(termNum) {
+      currentTerm = termNum;
+      document.querySelectorAll('.term-tab').forEach((tab, i) => {
+        tab.classList.toggle('active', i + 1 === termNum);
+      });
+      renderSectionTable();
+    }
 
-    /* ============================================================
-       ACTIVITY MODAL
-       ============================================================ */
+    /* BANNER & FILE UPLOAD HANDLERS */
+    async function handleBannerFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const bannerUrl = await uploadImageToStorage(file, `banners/${Date.now()}`);
+      mainConfig.banner = bannerUrl;
+      await db.collection('dashboard').doc('main_config').update({ banner: bannerUrl });
+    }
 
-    function openModal(
-      actId
-    ) {
+    function triggerCoverEdit(secId) {
+      activeEditingSectionId = secId;
+      document.getElementById('global-cover-picker').click();
+    }
 
-      const act =
-        (
-          state.activities || []
-        ).find(
-          a =>
-            a.id ===
-            actId
-        );
+    async function handleCoverFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file || !activeEditingSectionId) return;
+      const coverUrl = await uploadImageToStorage(file, `covers/${Date.now()}`);
+      await db.collection('sections').doc(activeEditingSectionId).update({ cover: coverUrl });
+    }
 
+    function triggerAvatarEdit(stuId) {
+      if (!isTeacher) return;
+      activeEditingStudentId = stuId;
+      document.getElementById('global-avatar-picker').click();
+    }
 
+    async function handleAvatarFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file || !activeEditingStudentId || !currentSection) return;
+      const avatarUrl = await uploadImageToStorage(file, `avatars/${Date.now()}`);
+      await db.collection('sections').doc(currentSection.id).collection('students').doc(activeEditingStudentId).update({ avatar: avatarUrl });
+    }
+
+    function openActModal(actId) {
+      const act = currentActivities.find(a => a.id === actId);
       if (!act) return;
-
-
-      document.getElementById(
-        'modal-label'
-      ).innerText =
-        act.label ||
-        "ACTIVITY TASK";
-
-
-      document.getElementById(
-        'modal-title'
-      ).innerText =
-        act.title;
-
-
-      document.getElementById(
-        'modal-date'
-      ).innerText =
-        act.date
-          ? `📅 Assigned: ${act.date}`
-          : "";
-
-
-      document.getElementById(
-        'modal-desc'
-      ).innerText =
-        act.desc ||
-        "No additional instructions provided.";
-
-
-      const linkContainer =
-        document.getElementById(
-          'modal-link-container'
-        );
-
-
-      if (act.link) {
-
-        linkContainer.innerHTML = `
-
-          <a
-            href="${escapeHtml(act.link)}"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn"
-            style="
-              display:inline-block;
-              text-align:center;
-              width:100%;
-            "
-          >
-            📎 View Attached Material / Link
-          </a>
-
-        `;
-
-      } else {
-
-        linkContainer.innerHTML =
-          "";
-
-      }
-
-
-      document.getElementById(
-        'act-modal'
-      ).style.display =
-        'flex';
-
+      document.getElementById('modal-label').innerText = act.label;
+      document.getElementById('modal-title').innerText = act.title;
+      document.getElementById('modal-date').innerText = act.date ? `Due / Date: ${act.date}` : '';
+      document.getElementById('modal-desc').innerText = act.desc || 'No instructions provided.';
+      document.getElementById('modal-link-container').innerHTML = act.link ? `<a href="${act.link}" target="_blank" class="btn">View Attached Link</a>` : '';
+      document.getElementById('act-modal').style.display = 'flex';
     }
-
-
-    /* ============================================================
-       CLOSE MODAL
-       ============================================================ */
 
     function closeModal() {
-
-      document.getElementById(
-        'act-modal'
-      ).style.display =
-        'none';
-
+      document.getElementById('act-modal').style.display = 'none';
     }
 
+    function updateLabel(input, labelId) {
+      document.getElementById(labelId).innerText = input.files[0] ? input.files[0].name : '📷 Upload Photo';
+    }
 
-    /* ============================================================
-       CLOSE MODAL WHEN CLICKING OUTSIDE
-       ============================================================ */
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
 
-    window.onclick =
-      function(event) {
-
-        const modal =
-          document.getElementById(
-            'act-modal'
-          );
-
-
-        if (
-          event.target ===
-          modal
-        ) {
-
-          closeModal();
-
-        }
-
-      };
-
+    // Initialize listeners on load
+    initListeners();
   </script>
-
 </body>
 </html>
-```
