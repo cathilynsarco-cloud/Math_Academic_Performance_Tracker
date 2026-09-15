@@ -188,6 +188,11 @@
       background: #f1f5f9; font-size: 0.8rem; color: var(--muted); text-transform: uppercase;
     }
 
+    /* STUDENT FINAL STATUS BOX */
+    .student-final-status-box {
+      margin-top: 1.5rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 1.25rem;
+    }
+
     /* LESSON NOTES & RESOURCES SECTION */
     .resources-section {
       margin-top: 2rem; background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 1.25rem;
@@ -397,15 +402,21 @@
             <tbody id="student-vertical-tbody"></tbody>
           </table>
         </div>
+
+        <!-- STUDENT FINAL STATUS / REMARK BOX -->
+        <div class="student-final-status-box">
+          <h4 style="font-size: 1rem; color: var(--success); margin-bottom: 0.3rem;">📌 Final Status & Remarks for this Term</h4>
+          <p id="student-view-remark-text" style="font-size: 0.95rem; color: var(--text); font-style: italic;">No remarks posted yet.</p>
+        </div>
       </div>
 
       <!-- LESSON NOTES & ATTACHMENTS SECTION -->
       <div class="resources-section">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-          <h3>📚 Lesson Notes & Learning Attachments</h3>
-          <button class="btn" style="display:none;" id="add-resource-btn" onclick="addResource()">+ Add Resource</button>
+          <h3>📚 Lesson Notes & Learning Attachments (Term Specific)</h3>
+          <button class="btn" style="display:none;" id="add-resource-btn" onclick="addResource()">+ Add Resource to Current Term</button>
         </div>
-        <p style="font-size: 0.85rem; color: var(--muted);">Access supplementary guides, lectures, and download link modules below.</p>
+        <p style="font-size: 0.85rem; color: var(--muted);">Access supplementary guides, lectures, and download link modules uploaded strictly for this term.</p>
         <div id="resources-list"></div>
       </div>
 
@@ -822,7 +833,6 @@
         const actLabel = act.label || `Act #${idx + 1}`;
         const dateBadge = act.date ? `<div style="font-size:0.65rem; color:var(--muted); font-weight:600;">📅 ${act.date}</div>` : '';
 
-        // If teacher, clicking header edits activity. If student view (not reached here since this is teacher table), opens modal.
         const headerClickAction = isTeacher ? `editActivity('${act.id}')` : `openModal('${act.id}')`;
         const headerHint = isTeacher ? ' ✏️ (Click to edit)' : ' 🔍';
 
@@ -913,40 +923,53 @@
 
       if (activities.length === 0) {
         tbody.innerHTML = `<tr><td colspan="2" style="padding: 2rem; text-align: center; color: var(--muted); font-style: italic;">No activities assigned for this term yet.</td></tr>`;
-        return;
+      } else {
+        activities.forEach((act, idx) => {
+          const actLabel = act.label || `Act #${idx + 1}`;
+          const dateBadge = act.date ? `<div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">📅 Due: ${act.date}</div>` : '';
+          const descSnippet = act.description ? `<div style="font-size:0.85rem; color:var(--muted); margin-top:4px;">${escapeHtml(act.description.substring(0, 90))}...</div>` : '';
+          const linkBtn = act.link ? `<a href="${act.link}" target="_blank" style="display:inline-block; margin-top:4px; font-size:0.75rem; color:var(--primary); font-weight:bold;">📎 Open Link / Module</a>` : '';
+
+          const key = `${currentStudent.id}_${act.id}`;
+          const isDone = !!(state.completions || {})[key];
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>
+              <div style="cursor: pointer;" onclick="openModal('${act.id}')">
+                <div style="font-size:0.75rem; font-weight:bold; color:var(--primary); text-transform:uppercase;">${escapeHtml(actLabel)} 🔍</div>
+                <div style="font-weight:bold; font-size:1rem; color:var(--text); margin-top:2px;">${escapeHtml(act.title)}</div>
+                ${dateBadge}
+                ${descSnippet}
+                ${linkBtn}
+              </div>
+            </td>
+            <td style="text-align: center;">
+              <button class="token-btn ${isDone ? '' : 'empty'}" disabled title="${isDone ? 'Completed!' : 'Pending'}">
+                ${act.token}
+              </button>
+              <div style="font-size: 0.7rem; font-weight: bold; margin-top: 2px; color: ${isDone ? 'var(--success)' : 'var(--muted)'};">
+                ${isDone ? 'Completed' : 'Pending'}
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
       }
 
-      activities.forEach((act, idx) => {
-        const actLabel = act.label || `Act #${idx + 1}`;
-        const dateBadge = act.date ? `<div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">📅 Due: ${act.date}</div>` : '';
-        const descSnippet = act.description ? `<div style="font-size:0.85rem; color:var(--muted); margin-top:4px;">${escapeHtml(act.description.substring(0, 90))}...</div>` : '';
-        const linkBtn = act.link ? `<a href="${act.link}" target="_blank" style="display:inline-block; margin-top:4px; font-size:0.75rem; color:var(--primary); font-weight:bold;">📎 Open Link / Module</a>` : '';
-
-        const key = `${currentStudent.id}_${act.id}`;
-        const isDone = !!(state.completions || {})[key];
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>
-            <div style="cursor: pointer;" onclick="openModal('${act.id}')">
-              <div style="font-size:0.75rem; font-weight:bold; color:var(--primary); text-transform:uppercase;">${escapeHtml(actLabel)} 🔍</div>
-              <div style="font-weight:bold; font-size:1rem; color:var(--text); margin-top:2px;">${escapeHtml(act.title)}</div>
-              ${dateBadge}
-              ${descSnippet}
-              ${linkBtn}
-            </div>
-          </td>
-          <td style="text-align: center;">
-            <button class="token-btn ${isDone ? '' : 'empty'}" disabled title="${isDone ? 'Completed!' : 'Pending'}">
-              ${act.token}
-            </button>
-            <div style="font-size: 0.7rem; font-weight: bold; margin-top: 2px; color: ${isDone ? 'var(--success)' : 'var(--muted)'};">
-              ${isDone ? 'Completed' : 'Pending'}
-            </div>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+      // Render Final Status / Remark visible to students
+      const remarkKey = `${currentStudent.id}_term${currentTerm}`;
+      const termRemark = (state.remarks || {})[remarkKey];
+      const remarkEl = document.getElementById('student-view-remark-text');
+      if (termRemark && termRemark.trim() !== "") {
+        remarkEl.innerText = termRemark;
+        remarkEl.style.fontStyle = "normal";
+        remarkEl.style.fontWeight = "600";
+      } else {
+        remarkEl.innerText = "No remarks or final status entered by teacher yet for this term.";
+        remarkEl.style.fontStyle = "italic";
+        remarkEl.style.fontWeight = "normal";
+      }
     }
 
     function renderResources() {
@@ -954,9 +977,13 @@
       list.innerHTML = '';
 
       if (!currentSection) return;
-      const sectionResources = (state.resources || []).filter(r => r.sectionId === currentSection.id);
+      // Filter resources strictly by current section AND current term
+      const sectionResources = (state.resources || []).filter(r => 
+        r.sectionId === currentSection.id && (r.term === currentTerm || (!r.term && currentTerm === 1))
+      );
+
       if (sectionResources.length === 0) {
-        list.innerHTML = `<p style="font-size:0.85rem; color:var(--muted); margin-top:0.5rem; font-style: italic;">No notes or lesson attachments posted yet.</p>`;
+        list.innerHTML = `<p style="font-size:0.85rem; color:var(--muted); margin-top:0.5rem; font-style: italic;">No notes or lesson attachments posted yet for Term ${currentTerm}.</p>`;
         return;
       }
 
@@ -994,7 +1021,7 @@
 
     function addResource() {
       if (!isTeacher || !currentSection) return;
-      const title = prompt("Enter Lesson Title (e.g. Chapter 1 Notes):");
+      const title = prompt(`Enter Lesson Title for Term ${currentTerm} (e.g. Chapter 1 Notes):`);
       if (!title) return;
       const note = prompt("Enter Short Note or Instructions:");
       const link = prompt("Enter Resource URL / Drive Link (Optional):");
@@ -1003,6 +1030,7 @@
       state.resources.push({
         id: 'res_' + Date.now(),
         sectionId: currentSection.id,
+        term: currentTerm,
         title: title.trim(),
         note: (note || '').trim(),
         link: (link || '').trim()
@@ -1020,7 +1048,7 @@
       if (!isTeacher) return;
       const remarkKey = `${studentId}_term${currentTerm}`;
       const existing = (state.remarks || {})[remarkKey] || "";
-      const updated = prompt("Edit Status / Remark for this student:", existing);
+      const updated = prompt(`Edit Final Status / Remark for Term ${currentTerm}:`, existing);
       if (updated !== null) {
         if (!state.remarks) state.remarks = {};
         state.remarks[remarkKey] = updated.trim();
