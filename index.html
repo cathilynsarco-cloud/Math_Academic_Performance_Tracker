@@ -130,8 +130,11 @@
 
     .student-info { display: flex; align-items: center; gap: 0.35rem; text-align: left; }
     .student-name { cursor: default; font-size: 0.78rem; line-height: 1.1; word-break: break-word; }
-    body.teacher-mode .student-name { cursor: pointer; text-decoration: underline dotted var(--primary); }
-    .avatar-display { font-size: 1.5rem; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 50%; flex-shrink: 0; }
+    .avatar-display { 
+      font-size: 1.5rem; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; 
+      background: #f1f5f9; border-radius: 50%; flex-shrink: 0; cursor: pointer; transition: transform 0.2s;
+    }
+    .avatar-display:hover { transform: scale(1.1); }
 
     .act-header-wrapper { cursor: pointer; display: block; color: inherit; text-decoration: none; padding: 0.2rem; border-radius: 6px; }
     .act-header-wrapper:hover { background: #e2e8f0; }
@@ -174,9 +177,25 @@
       margin-top: 2rem; background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 1.5rem;
       display: flex; gap: 1.5rem; align-items: center; position: relative;
     }
-    .teacher-profile-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0; }
-    .teacher-profile-info h4 { font-size: 1.1rem; margin-bottom: 0.3rem; color: var(--primary); }
-    .teacher-profile-info p { font-size: 0.9rem; color: var(--muted); line-height: 1.4; }
+    .teacher-profile-img { 
+      width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0; 
+      cursor: default; 
+    }
+    body.teacher-mode .teacher-profile-img { 
+      cursor: pointer; 
+      filter: brightness(0.9); 
+      transition: filter 0.2s, transform 0.2s; 
+    }
+    body.teacher-mode .teacher-profile-img:hover { 
+      filter: brightness(1); 
+      transform: scale(1.05); 
+    }
+
+    .editable-profile-text { cursor: default; }
+    body.teacher-mode .editable-profile-text { cursor: pointer; border-bottom: 1px dashed var(--primary); }
+
+    .teacher-profile-info h4 { font-size: 1.1rem; margin-bottom: 0.3rem; color: var(--primary); display: inline-block; }
+    .teacher-profile-info p { font-size: 0.9rem; color: var(--muted); line-height: 1.4; margin-top: 0.2rem; }
 
     /* MODAL POP-UP STYLING */
     .modal-backdrop {
@@ -194,7 +213,7 @@
 </head>
 <body>
 
-  <!-- HIDDEN FILE INPUTS -->
+  <!-- HIDDEN FILE INPUTS (Strictly restricted from local image uploads for student avatars) -->
   <input type="file" id="global-banner-picker" accept="image/*" style="display:none;" onchange="handleBannerFileSelect(event)" />
   <input type="file" id="global-cover-picker" accept="image/*" style="display:none;" onchange="handleCoverFileSelect(event)" />
   <input type="file" id="teacher-photo-picker" accept="image/*" style="display:none;" onchange="handleTeacherPhotoSelect(event)" />
@@ -295,7 +314,7 @@
       <div class="grid-container" id="sections-grid"></div>
     </div>
 
-    <!-- STUDENTS VIEW -->
+    <!-- STUDENTS VIEW (Student mode selection list) -->
     <div id="students-view" style="display: none;">
       <h3 style="margin-bottom: 1rem; color: var(--muted);" id="students-view-subtitle">Select Student Name</h3>
       <div class="grid-container" id="students-grid"></div>
@@ -337,12 +356,11 @@
 
       <!-- TEACHER PROFILE FOOTER -->
       <div class="teacher-profile-box" id="teacher-profile-container">
-        <img id="teacher-profile-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=60" class="teacher-profile-img" />
+        <img id="teacher-profile-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=60" class="teacher-profile-img" onclick="triggerTeacherPhotoUpload()" title="Click to upload profile photo (Teacher Mode)" />
         <div class="teacher-profile-info">
-          <h4 id="teacher-profile-name">Teacher Name</h4>
-          <p id="teacher-profile-desc">Add your teacher description, contact info, or consultation hours here.</p>
+          <h4 id="teacher-profile-name" class="editable-profile-text" onclick="editTeacherName()" title="Click to edit name">Teacher Name</h4>
+          <p id="teacher-profile-desc" class="editable-profile-text" onclick="editTeacherDescription()" title="Click to edit description">Add your teacher description, contact info, or consultation hours here.</p>
         </div>
-        <button class="btn action-badge-btn" id="edit-profile-btn" style="position: absolute; top: 15px; right: 15px; display:none;" onclick="editTeacherProfile()">✏️ Edit Profile</button>
       </div>
     </div>
   </div>
@@ -458,7 +476,9 @@
           document.getElementById('mode-indicator').className = "mode-badge mode-teacher";
           document.getElementById('mode-indicator').innerText = "✏️ Teacher Mode";
           document.getElementById('toggle-mode-btn').innerText = "🔒 Exit Teacher Mode";
-          document.getElementById('edit-profile-btn').style.display = "block";
+          if (currentView === 'students') {
+            currentView = 'terms';
+          }
         } else if (pass !== null) {
           alert("Incorrect Passcode!");
         }
@@ -468,7 +488,10 @@
         document.getElementById('mode-indicator').className = "mode-badge mode-student";
         document.getElementById('mode-indicator').innerText = "👀 Student View";
         document.getElementById('toggle-mode-btn').innerText = "🔑 Teacher Login";
-        document.getElementById('edit-profile-btn').style.display = "none";
+        currentStudent = null;
+        if (currentView === 'terms' || currentView === 'activities') {
+          currentView = currentSection ? 'students' : 'home';
+        }
       }
       render();
     }
@@ -479,6 +502,59 @@
       const updated = prompt("Edit Main Hub Heading:", current);
       if (updated && updated.trim() !== "") {
         state.headingText = updated.trim();
+        saveState();
+      }
+    }
+
+    function editTeacherName() {
+      if (!isTeacher) return;
+      const current = (state.teacherProfile && state.teacherProfile.name) || "Teacher Name";
+      const updated = prompt("Edit Teacher Name:", current);
+      if (updated !== null && updated.trim() !== "") {
+        if (!state.teacherProfile) state.teacherProfile = {};
+        state.teacherProfile.name = updated.trim();
+        saveState();
+      }
+    }
+
+    function editTeacherDescription() {
+      if (!isTeacher) return;
+      const current = (state.teacherProfile && state.teacherProfile.description) || "";
+      const updated = prompt("Edit Teacher Description / Contact Info / Hours:", current);
+      if (updated !== null) {
+        if (!state.teacherProfile) state.teacherProfile = {};
+        state.teacherProfile.description = updated.trim();
+        saveState();
+      }
+    }
+
+    function triggerTeacherPhotoUpload() {
+      if (!isTeacher) return;
+      document.getElementById('teacher-photo-picker').click();
+    }
+
+    async function handleTeacherPhotoSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        try {
+          const compressed = await processAndCompressImage(file, 200, 0.5);
+          if (!state.teacherProfile) state.teacherProfile = {};
+          state.teacherProfile.photo = compressed;
+          saveState();
+        } catch(e) {
+          alert("Error processing photo.");
+        }
+      }
+      event.target.value = '';
+    }
+
+    function changeStudentAvatar(studentId) {
+      const student = (state.students || []).find(s => s.id === studentId);
+      if (!student) return;
+      
+      const newAvatar = prompt("Choose or type your favorite emoji avatar (e.g. 🦊, 🚀, 🎨, 💖):", student.avatar || "💖");
+      if (newAvatar !== null && newAvatar.trim() !== "") {
+        student.avatar = newAvatar.trim().substring(0, 4); // Keep length compact
         saveState();
       }
     }
@@ -499,7 +575,12 @@
     function openSection(secId) {
       currentSection = (state.sections || []).find(s => s.id === secId);
       currentStudent = null;
-      currentView = 'students';
+      
+      if (isTeacher) {
+        currentView = 'terms';
+      } else {
+        currentView = 'students';
+      }
       render();
     }
 
@@ -548,22 +629,28 @@
         renderStudentsGrid();
       } else if (currentView === 'terms') {
         breadcrumb.style.display = 'flex';
-        bSecBtn.style.display = 'inline-block';
-        bDiv1.style.display = 'inline';
-        bDiv2.style.display = 'inline';
-        bTitle.innerText = currentStudent ? currentStudent.name : '';
-        document.getElementById('form-section-controls').style.display = 'none';
+        bSecBtn.style.display = isTeacher ? 'none' : 'inline-block';
+        bDiv1.style.display = isTeacher ? 'none' : 'inline';
+        bDiv2.style.display = 'none';
+        bTitle.innerText = isTeacher ? (currentSection ? currentSection.name : '') : (currentStudent ? currentStudent.name : '');
+        document.getElementById('form-section-controls').style.display = isTeacher ? 'grid' : 'none';
         document.getElementById('form-activity-controls').style.display = 'none';
       } else if (currentView === 'activities') {
         breadcrumb.style.display = 'flex';
-        bSecBtn.style.display = 'inline-block';
-        bDiv1.style.display = 'inline';
+        bSecBtn.style.display = isTeacher ? 'none' : 'inline-block';
+        bDiv1.style.display = isTeacher ? 'none' : 'inline';
         bDiv2.style.display = 'inline';
-        bTitle.innerText = `${currentStudent ? currentStudent.name : ''} - Term ${currentTerm}`;
-        document.getElementById('form-section-controls').style.display = 'none';
+        
+        if (isTeacher) {
+          bTitle.innerText = `${currentSection ? currentSection.name : ''} - Term ${currentTerm}`;
+          document.getElementById('form-section-controls').style.display = 'none';
+        } else {
+          bTitle.innerText = `${currentStudent ? currentStudent.name : ''} - Term ${currentTerm}`;
+          document.getElementById('form-section-controls').style.display = 'none';
+        }
+
         document.getElementById('form-activity-controls').style.display = isTeacher ? 'grid' : 'none';
         document.getElementById('add-resource-btn').style.display = isTeacher ? 'block' : 'none';
-        document.getElementById('edit-profile-btn').style.display = isTeacher ? 'block' : 'none';
         renderSectionTable();
       }
 
@@ -617,16 +704,15 @@
         card.className = 'student-card';
         const deleteBtn = isTeacher ? `<button class="action-badge-btn" style="background:var(--danger); position:absolute; top:10px; right:10px;" onclick="deleteStudent(event, ${student.id})">🗑️</button>` : '';
         
-        // Fallback to default heart emoji if avatar is empty or missing
         const studentAvatar = student.avatar || '💖';
 
         card.innerHTML = `
           ${deleteBtn}
           <div class="card-body" style="display:flex; align-items:center; gap:1rem;">
-            <div class="avatar-display">${studentAvatar}</div>
+            <div class="avatar-display" onclick="event.stopPropagation(); changeStudentAvatar(${student.id})" title="Click to change your emoji avatar">${studentAvatar}</div>
             <div>
               <div class="card-title" style="margin-bottom:0.2rem;">${escapeHtml(student.name)}</div>
-              <div class="card-meta">Click to view Terms & Performance</div>
+              <div class="card-meta">Click name to view Terms & Progress</div>
             </div>
           </div>
         `;
@@ -638,7 +724,7 @@
     }
 
     function renderSectionTable() {
-      if (!currentSection || !currentStudent) return;
+      if (!currentSection) return;
 
       const headerRow = document.getElementById('table-header');
       const tbody = document.getElementById('table-body');
@@ -674,48 +760,64 @@
       headerRow.innerHTML = headerHtml;
 
       tbody.innerHTML = '';
-      const tr = document.createElement('tr');
       
-      const studentAvatar = currentStudent.avatar || '💖';
-      let studentCell = `
-        <td>
-          <div class="student-info">
-            <div class="avatar-display">${studentAvatar}</div>
-            <div style="flex:1; min-width: 0;">
-              <strong class="student-name">${escapeHtml(currentStudent.name)}</strong>
-            </div>
-          </div>
-        </td>
-      `;
+      let studentsToRender = [];
+      if (isTeacher) {
+        studentsToRender = (state.students || []).filter(s => s.sectionId === currentSection.id);
+      } else {
+        if (currentStudent) studentsToRender = [currentStudent];
+      }
 
-      let taskCells = activities.map(act => {
-        const key = `${currentStudent.id}_${act.id}`;
-        const isDone = !!(state.completions || {})[key];
+      if (studentsToRender.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${activities.length + 2}" style="padding: 2rem; color: var(--muted); font-style: italic;">No students found in this section.</td></tr>`;
+        renderResources();
+        return;
+      }
 
-        return `
+      studentsToRender.forEach(student => {
+        const tr = document.createElement('tr');
+        const studentAvatar = student.avatar || '💖';
+        
+        let studentCell = `
           <td>
-            <button 
-              class="token-btn ${isDone ? '' : 'empty'}" 
-              onclick="toggleToken(${currentStudent.id}, '${act.id}')"
-              ${!isTeacher ? 'disabled' : ''}
-            >
-              ${act.token}
-            </button>
+            <div class="student-info">
+              <div class="avatar-display" onclick="changeStudentAvatar(${student.id})" title="Click to change your emoji avatar">${studentAvatar}</div>
+              <div style="flex:1; min-width: 0;">
+                <strong class="student-name">${escapeHtml(student.name)}</strong>
+              </div>
+            </div>
           </td>
         `;
-      }).join('');
 
-      const remarkKey = `${currentStudent.id}_term${currentTerm}`;
-      const currentRemark = (state.remarks || {})[remarkKey] || (isTeacher ? "Click to edit remarks" : "—");
+        let taskCells = activities.map(act => {
+          const key = `${student.id}_${act.id}`;
+          const isDone = !!(state.completions || {})[key];
 
-      let statusCell = `
-        <td class="status-cell" onclick="editRemark(${currentStudent.id})">
-          <em>${escapeHtml(currentRemark)}</em>
-        </td>
-      `;
+          return `
+            <td>
+              <button 
+                class="token-btn ${isDone ? '' : 'empty'}" 
+                onclick="toggleToken(${student.id}, '${act.id}')"
+                ${!isTeacher ? 'disabled' : ''}
+              >
+                ${act.token}
+              </button>
+            </td>
+          `;
+        }).join('');
 
-      tr.innerHTML = studentCell + taskCells + statusCell;
-      tbody.appendChild(tr);
+        const remarkKey = `${student.id}_term${currentTerm}`;
+        const currentRemark = (state.remarks || {})[remarkKey] || (isTeacher ? "Click to edit remarks" : "—");
+
+        let statusCell = `
+          <td class="status-cell" onclick="editRemark(${student.id})">
+            <em>${escapeHtml(currentRemark)}</em>
+          </td>
+        `;
+
+        tr.innerHTML = studentCell + taskCells + statusCell;
+        tbody.appendChild(tr);
+      });
 
       renderResources();
     }
@@ -739,7 +841,7 @@
         item.innerHTML = `
           <div>
             <div style="font-weight:bold; font-size:0.95rem;">${escapeHtml(res.title)}</div>
-            <p style="font-size:0.85rem; color:var(--text); margin-top:0.2rem;">${escapeHtml(res.note)}</p>
+            <p style="font-size:0.85rem; color: var(--text); margin-top:0.2rem;">${escapeHtml(res.note)}</p>
           </div>
           <div style="display:flex; align-items:center; gap:0.5rem;">
             ${linkBtn}
@@ -760,37 +862,6 @@
       } else {
         imgEl.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=60";
       }
-    }
-
-    async function editTeacherProfile() {
-      if (!isTeacher) return;
-      const name = prompt("Enter Teacher Name:", state.teacherProfile.name || "");
-      if (name === null) return;
-      const desc = prompt("Enter Teacher Description / Contact Info / Hours:", state.teacherProfile.description || "");
-      if (desc === null) return;
-
-      state.teacherProfile.name = name.trim();
-      state.teacherProfile.description = desc.trim();
-
-      if (confirm("Would you like to upload a low-resolution profile photo?")) {
-        document.getElementById('teacher-photo-picker').click();
-        return;
-      }
-      saveState();
-    }
-
-    async function handleTeacherPhotoSelect(event) {
-      const file = event.target.files[0];
-      if (file) {
-        try {
-          const compressed = await processAndCompressImage(file, 200, 0.5);
-          state.teacherProfile.photo = compressed;
-          saveState();
-        } catch(e) {
-          alert("Error processing photo.");
-        }
-      }
-      event.target.value = '';
     }
 
     function addResource() {
