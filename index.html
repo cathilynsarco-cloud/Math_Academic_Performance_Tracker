@@ -14,6 +14,7 @@
       --muted: #64748b;
       --border: #e2e8f0;
       --danger: #ef4444;
+      --success: #15803d;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
@@ -101,16 +102,17 @@
     }
     .file-input-wrapper input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
 
-    /* TERM TABS */
-    .term-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-    .term-card {
-      background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 1.5rem;
-      text-align: center; cursor: pointer; font-weight: bold; font-size: 1.1rem; color: var(--primary);
-      transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    /* TERM TABS BAR */
+    .term-tabs-bar {
+      display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem;
     }
-    .term-card:hover { transform: translateY(-3px); border-color: var(--primary); background: #e0e7ff33; }
+    .term-tab-btn {
+      padding: 0.5rem 1.2rem; border-radius: 8px; border: 1px solid var(--border); background: var(--card);
+      font-weight: bold; font-size: 0.9rem; cursor: pointer; color: var(--muted); transition: all 0.2s;
+    }
+    .term-tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    /* TABLE SCROLLING & STICKY COLUMNS */
+    /* TABLE SCROLLING & STICKY COLUMNS (TEACHER VIEW) */
     .table-wrapper { overflow: auto; max-height: 70vh; background: var(--card); border-radius: 12px; border: 1px solid var(--border); }
     table { width: 100%; border-collapse: separate; border-spacing: 0; }
     th, td { padding: 0.55rem 0.4rem; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
@@ -144,7 +146,7 @@
     }
 
     .status-cell { 
-      font-size: 0.75rem; color: #15803d; font-weight: 600; font-style: italic; 
+      font-size: 0.75rem; color: var(--success); font-weight: 600; font-style: italic; 
       cursor: default; line-height: 1.1; word-break: break-word; min-width: 110px; 
     }
     body.teacher-mode .status-cell { cursor: pointer; text-decoration: underline dotted var(--primary); }
@@ -162,6 +164,25 @@
     .icon-btn-sm { background: none; border: none; cursor: pointer; font-size: 0.7rem; opacity: 0.7; margin: 0 1px; }
     .icon-btn-sm:hover { opacity: 1; }
     .nav-breadcrumb { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+
+    /* STUDENT VERTICAL LIST VIEW */
+    .student-view-container {
+      background: var(--card); border-radius: 16px; border: 1px solid var(--border); padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .student-header-banner {
+      display: flex; align-items: center; gap: 1rem; background: #f8fafc; padding: 1rem 1.25rem;
+      border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.5rem;
+    }
+    .vertical-act-table {
+      width: 100%; border-collapse: collapse;
+    }
+    .vertical-act-table th, .vertical-act-table td {
+      padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle;
+    }
+    .vertical-act-table th {
+      background: #f1f5f9; font-size: 0.8rem; color: var(--muted); text-transform: uppercase;
+    }
 
     /* LESSON NOTES & RESOURCES SECTION */
     .resources-section {
@@ -182,13 +203,10 @@
       cursor: default; 
     }
     body.teacher-mode .teacher-profile-img { 
-      cursor: pointer; 
-      filter: brightness(0.9); 
-      transition: filter 0.2s, transform 0.2s; 
+      cursor: pointer; filter: brightness(0.9); transition: filter 0.2s, transform 0.2s; 
     }
     body.teacher-mode .teacher-profile-img:hover { 
-      filter: brightness(1); 
-      transform: scale(1.05); 
+      filter: brightness(1); transform: scale(1.05); 
     }
 
     .editable-profile-text { cursor: default; }
@@ -213,7 +231,7 @@
 </head>
 <body>
 
-  <!-- HIDDEN FILE INPUTS (Strictly restricted from local image uploads for student avatars) -->
+  <!-- HIDDEN FILE INPUTS -->
   <input type="file" id="global-banner-picker" accept="image/*" style="display:none;" onchange="handleBannerFileSelect(event)" />
   <input type="file" id="global-cover-picker" accept="image/*" style="display:none;" onchange="handleCoverFileSelect(event)" />
   <input type="file" id="teacher-photo-picker" accept="image/*" style="display:none;" onchange="handleTeacherPhotoSelect(event)" />
@@ -288,7 +306,7 @@
             <option value="🦋">🦋 Butterfly Kid</option>
           </optgroup>
         </select>
-        <button class="btn" style="grid-column: 1 / -1;" onclick="addStudent()">+ Add Student</button>
+        <button class="btn" style="grid-column: 1 / -1;" onclick="addStudent()">+ Add Student (Auto A-Z Sort)</button>
       </div>
 
       <div class="form-grid" id="form-activity-controls" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
@@ -314,25 +332,34 @@
       <div class="grid-container" id="sections-grid"></div>
     </div>
 
-    <!-- STUDENTS VIEW (Student mode selection list) -->
+    <!-- STUDENTS VIEW -->
     <div id="students-view" style="display: none;">
-      <h3 style="margin-bottom: 1rem; color: var(--muted);" id="students-view-subtitle">Select Student Name</h3>
+      <h3 style="margin-bottom: 1.5rem; color: var(--muted);" id="students-view-subtitle">Select Your Name to Continue</h3>
       <div class="grid-container" id="students-grid"></div>
     </div>
 
     <!-- TERMS VIEW -->
     <div id="terms-view" style="display: none;">
       <h3 style="margin-bottom: 1rem; color: var(--muted);">Select Term</h3>
-      <div class="term-tabs">
-        <div class="term-card" onclick="selectTerm(1)">📘 Term 1</div>
-        <div class="term-card" onclick="selectTerm(2)">📗 Term 2</div>
-        <div class="term-card" onclick="selectTerm(3)">📙 Term 3</div>
+      <div class="grid-container" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="section-card" onclick="selectTerm(1)" style="padding: 1.5rem; text-align: center; font-weight: bold; font-size: 1.1rem; color: var(--primary);">📘 Term 1</div>
+        <div class="section-card" onclick="selectTerm(2)" style="padding: 1.5rem; text-align: center; font-weight: bold; font-size: 1.1rem; color: var(--primary);">📗 Term 2</div>
+        <div class="section-card" onclick="selectTerm(3)" style="padding: 1.5rem; text-align: center; font-weight: bold; font-size: 1.1rem; color: var(--primary);">📙 Term 3</div>
       </div>
     </div>
 
     <!-- ACTIVITIES & TABLE VIEW -->
     <div id="section-view" style="display: none;">
-      <div class="table-wrapper">
+      
+      <!-- TERM TABS BAR -->
+      <div class="term-tabs-bar" id="term-tabs-bar">
+        <button class="term-tab-btn" id="t-btn-1" onclick="selectTerm(1)">📘 Term 1</button>
+        <button class="term-tab-btn" id="t-btn-2" onclick="selectTerm(2)">📗 Term 2</button>
+        <button class="term-tab-btn" id="t-btn-3" onclick="selectTerm(3)">📙 Term 3</button>
+      </div>
+
+      <!-- TEACHER VIEW TABLE -->
+      <div class="table-wrapper" id="teacher-table-container">
         <table>
           <thead>
             <tr id="table-header">
@@ -342,6 +369,30 @@
           </thead>
           <tbody id="table-body"></tbody>
         </table>
+      </div>
+
+      <!-- STUDENT VIEW VERTICAL LIST -->
+      <div class="student-view-container" id="student-vertical-container" style="display: none;">
+        <div class="student-header-banner">
+          <div class="avatar-display" id="student-view-avatar" onclick="changeStudentAvatar(currentStudent.id)" title="Click to change your avatar" style="width: 50px; height: 50px; font-size: 2rem;">💖</div>
+          <div>
+            <h2 id="student-view-name" style="font-size: 1.4rem; color: var(--text);">Student Name</h2>
+            <div style="font-size: 0.85rem; color: var(--muted);" id="student-view-term-label">Term Progress Hub</div>
+          </div>
+        </div>
+
+        <h3 style="margin-bottom: 0.75rem; font-size: 1.1rem; color: var(--primary);">📋 Activities & Performance Tasks</h3>
+        <div style="overflow-x: auto;">
+          <table class="vertical-act-table">
+            <thead>
+              <tr>
+                <th>Activity Details</th>
+                <th style="width: 150px; text-align: center;">Token / Status</th>
+              </tr>
+            </thead>
+            <tbody id="student-vertical-tbody"></tbody>
+          </table>
+        </div>
       </div>
 
       <!-- LESSON NOTES & ATTACHMENTS SECTION -->
@@ -476,8 +527,9 @@
           document.getElementById('mode-indicator').className = "mode-badge mode-teacher";
           document.getElementById('mode-indicator').innerText = "✏️ Teacher Mode";
           document.getElementById('toggle-mode-btn').innerText = "🔒 Exit Teacher Mode";
-          if (currentView === 'students') {
-            currentView = 'terms';
+          if (currentView === 'students' || currentView === 'terms') {
+            currentView = 'activities';
+            currentTerm = 1;
           }
         } else if (pass !== null) {
           alert("Incorrect Passcode!");
@@ -489,7 +541,7 @@
         document.getElementById('mode-indicator').innerText = "👀 Student View";
         document.getElementById('toggle-mode-btn').innerText = "🔑 Teacher Login";
         currentStudent = null;
-        if (currentView === 'terms' || currentView === 'activities') {
+        if (currentView === 'activities') {
           currentView = currentSection ? 'students' : 'home';
         }
       }
@@ -554,7 +606,7 @@
       
       const newAvatar = prompt("Choose or type your favorite emoji avatar (e.g. 🦊, 🚀, 🎨, 💖):", student.avatar || "💖");
       if (newAvatar !== null && newAvatar.trim() !== "") {
-        student.avatar = newAvatar.trim().substring(0, 4); // Keep length compact
+        student.avatar = newAvatar.trim().substring(0, 4);
         saveState();
       }
     }
@@ -575,9 +627,10 @@
     function openSection(secId) {
       currentSection = (state.sections || []).find(s => s.id === secId);
       currentStudent = null;
+      currentTerm = 1;
       
       if (isTeacher) {
-        currentView = 'terms';
+        currentView = 'activities';
       } else {
         currentView = 'students';
       }
@@ -624,36 +677,53 @@
         bDiv1.style.display = 'none';
         bDiv2.style.display = 'none';
         bTitle.innerText = currentSection ? currentSection.name : '';
-        document.getElementById('form-section-controls').style.display = 'grid';
+        document.getElementById('form-section-controls').style.display = 'none';
         document.getElementById('form-activity-controls').style.display = 'none';
         renderStudentsGrid();
       } else if (currentView === 'terms') {
         breadcrumb.style.display = 'flex';
-        bSecBtn.style.display = isTeacher ? 'none' : 'inline-block';
-        bDiv1.style.display = isTeacher ? 'none' : 'inline';
+        bSecBtn.style.display = 'inline-block';
+        bDiv1.style.display = 'inline';
         bDiv2.style.display = 'none';
-        bTitle.innerText = isTeacher ? (currentSection ? currentSection.name : '') : (currentStudent ? currentStudent.name : '');
-        document.getElementById('form-section-controls').style.display = isTeacher ? 'grid' : 'none';
+        bTitle.innerText = currentStudent ? currentStudent.name : '';
+        document.getElementById('form-section-controls').style.display = 'none';
         document.getElementById('form-activity-controls').style.display = 'none';
       } else if (currentView === 'activities') {
         breadcrumb.style.display = 'flex';
         bSecBtn.style.display = isTeacher ? 'none' : 'inline-block';
         bDiv1.style.display = isTeacher ? 'none' : 'inline';
-        bDiv2.style.display = 'inline';
+        bDiv2.style.display = isTeacher ? 'none' : 'inline';
         
         if (isTeacher) {
-          bTitle.innerText = `${currentSection ? currentSection.name : ''} - Term ${currentTerm}`;
-          document.getElementById('form-section-controls').style.display = 'none';
+          bTitle.innerText = currentSection ? currentSection.name : '';
+          document.getElementById('form-section-controls').style.display = 'grid';
+          document.getElementById('form-activity-controls').style.display = 'grid';
+          document.getElementById('add-resource-btn').style.display = 'block';
+          document.getElementById('term-tabs-bar').style.display = 'flex';
+          
+          document.getElementById('teacher-table-container').style.display = 'block';
+          document.getElementById('student-vertical-container').style.display = 'none';
+
+          for (let i = 1; i <= 3; i++) {
+            const btn = document.getElementById(`t-btn-${i}`);
+            if (i === currentTerm) btn.classList.add('active');
+            else btn.classList.remove('active');
+          }
+          renderTeacherTable();
         } else {
           bTitle.innerText = `${currentStudent ? currentStudent.name : ''} - Term ${currentTerm}`;
           document.getElementById('form-section-controls').style.display = 'none';
-        }
+          document.getElementById('form-activity-controls').style.display = 'none';
+          document.getElementById('add-resource-btn').style.display = 'none';
+          document.getElementById('term-tabs-bar').style.display = 'none';
 
-        document.getElementById('form-activity-controls').style.display = isTeacher ? 'grid' : 'none';
-        document.getElementById('add-resource-btn').style.display = isTeacher ? 'block' : 'none';
-        renderSectionTable();
+          document.getElementById('teacher-table-container').style.display = 'none';
+          document.getElementById('student-vertical-container').style.display = 'block';
+          renderStudentVerticalList();
+        }
       }
 
+      renderResources();
       renderTeacherProfile();
     }
 
@@ -692,22 +762,21 @@
       if (!currentSection) return;
       const grid = document.getElementById('students-grid');
       grid.innerHTML = '';
-      const students = (state.students || []).filter(s => s.sectionId === currentSection.id);
+      
+      let students = (state.students || []).filter(s => s.sectionId === currentSection.id);
+      students.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }));
 
       if (students.length === 0) {
-        grid.innerHTML = `<p style="color:var(--muted); font-style:italic;">No students added yet. Use teacher controls above to add students.</p>`;
+        grid.innerHTML = `<p style="color:var(--muted); font-style:italic;">No students added yet.</p>`;
         return;
       }
 
       students.forEach(student => {
         const card = document.createElement('div');
         card.className = 'student-card';
-        const deleteBtn = isTeacher ? `<button class="action-badge-btn" style="background:var(--danger); position:absolute; top:10px; right:10px;" onclick="deleteStudent(event, ${student.id})">🗑️</button>` : '';
-        
         const studentAvatar = student.avatar || '💖';
 
         card.innerHTML = `
-          ${deleteBtn}
           <div class="card-body" style="display:flex; align-items:center; gap:1rem;">
             <div class="avatar-display" onclick="event.stopPropagation(); changeStudentAvatar(${student.id})" title="Click to change your emoji avatar">${studentAvatar}</div>
             <div>
@@ -723,7 +792,7 @@
       });
     }
 
-    function renderSectionTable() {
+    function renderTeacherTable() {
       if (!currentSection) return;
 
       const headerRow = document.getElementById('table-header');
@@ -738,12 +807,10 @@
         const actLabel = act.label || `Act #${idx + 1}`;
         const dateBadge = act.date ? `<div style="font-size:0.65rem; color:var(--muted); font-weight:600;">📅 ${act.date}</div>` : '';
 
-        const teacherControls = isTeacher 
-          ? `<div style="margin-top:2px;">
-              <button class="icon-btn-sm" onclick="editActivity('${act.id}')">✏️</button>
-              <button class="icon-btn-sm" style="color:var(--danger);" onclick="deleteActivity('${act.id}')">🗑️</button>
-             </div>` 
-          : '';
+        const teacherControls = `<div style="margin-top:2px;">
+            <button class="icon-btn-sm" onclick="editActivity('${act.id}')">✏️</button>
+            <button class="icon-btn-sm" style="color:var(--danger);" onclick="deleteActivity('${act.id}')">🗑️</button>
+           </div>`;
 
         headerHtml += `
           <th>
@@ -761,16 +828,11 @@
 
       tbody.innerHTML = '';
       
-      let studentsToRender = [];
-      if (isTeacher) {
-        studentsToRender = (state.students || []).filter(s => s.sectionId === currentSection.id);
-      } else {
-        if (currentStudent) studentsToRender = [currentStudent];
-      }
+      let studentsToRender = (state.students || []).filter(s => s.sectionId === currentSection.id);
+      studentsToRender.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }));
 
       if (studentsToRender.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="${activities.length + 2}" style="padding: 2rem; color: var(--muted); font-style: italic;">No students found in this section.</td></tr>`;
-        renderResources();
+        tbody.innerHTML = `<tr><td colspan="${activities.length + 2}" style="padding: 2rem; color: var(--muted); font-style: italic;">No students found in this section. Add students using the teacher controls above.</td></tr>`;
         return;
       }
 
@@ -781,7 +843,7 @@
         let studentCell = `
           <td>
             <div class="student-info">
-              <div class="avatar-display" onclick="changeStudentAvatar(${student.id})" title="Click to change your emoji avatar">${studentAvatar}</div>
+              <div class="avatar-display" onclick="changeStudentAvatar(${student.id})" title="Click to change emoji avatar">${studentAvatar}</div>
               <div style="flex:1; min-width: 0;">
                 <strong class="student-name">${escapeHtml(student.name)}</strong>
               </div>
@@ -795,11 +857,7 @@
 
           return `
             <td>
-              <button 
-                class="token-btn ${isDone ? '' : 'empty'}" 
-                onclick="toggleToken(${student.id}, '${act.id}')"
-                ${!isTeacher ? 'disabled' : ''}
-              >
+              <button class="token-btn ${isDone ? '' : 'empty'}" onclick="toggleToken(${student.id}, '${act.id}')">
                 ${act.token}
               </button>
             </td>
@@ -807,7 +865,7 @@
         }).join('');
 
         const remarkKey = `${student.id}_term${currentTerm}`;
-        const currentRemark = (state.remarks || {})[remarkKey] || (isTeacher ? "Click to edit remarks" : "—");
+        const currentRemark = (state.remarks || {})[remarkKey] || "Click to edit remarks";
 
         let statusCell = `
           <td class="status-cell" onclick="editRemark(${student.id})">
@@ -818,14 +876,65 @@
         tr.innerHTML = studentCell + taskCells + statusCell;
         tbody.appendChild(tr);
       });
+    }
 
-      renderResources();
+    function renderStudentVerticalList() {
+      if (!currentStudent) return;
+
+      document.getElementById('student-view-avatar').innerText = currentStudent.avatar || '💖';
+      document.getElementById('student-view-name').innerText = currentStudent.name;
+      document.getElementById('student-view-term-label').innerText = `Term ${currentTerm} Performance & Task Hub`;
+
+      const tbody = document.getElementById('student-vertical-tbody');
+      tbody.innerHTML = '';
+
+      const activities = (state.activities || []).filter(a => 
+        a.sectionId === currentSection.id && (a.term === currentTerm || (!a.term && currentTerm === 1))
+      );
+
+      if (activities.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="2" style="padding: 2rem; text-align: center; color: var(--muted); font-style: italic;">No activities assigned for this term yet.</td></tr>`;
+        return;
+      }
+
+      activities.forEach((act, idx) => {
+        const actLabel = act.label || `Act #${idx + 1}`;
+        const dateBadge = act.date ? `<div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">📅 Due: ${act.date}</div>` : '';
+        const descSnippet = act.description ? `<div style="font-size:0.85rem; color:var(--muted); margin-top:4px;">${escapeHtml(act.description.substring(0, 90))}...</div>` : '';
+        const linkBtn = act.link ? `<a href="${act.link}" target="_blank" style="display:inline-block; margin-top:4px; font-size:0.75rem; color:var(--primary); font-weight:bold;">📎 Open Link / Module</a>` : '';
+
+        const key = `${currentStudent.id}_${act.id}`;
+        const isDone = !!(state.completions || {})[key];
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div style="cursor: pointer;" onclick="openModal('${act.id}')">
+              <div style="font-size:0.75rem; font-weight:bold; color:var(--primary); text-transform:uppercase;">${escapeHtml(actLabel)} 🔍</div>
+              <div style="font-weight:bold; font-size:1rem; color:var(--text); margin-top:2px;">${escapeHtml(act.title)}</div>
+              ${dateBadge}
+              ${descSnippet}
+              ${linkBtn}
+            </div>
+          </td>
+          <td style="text-align: center;">
+            <button class="token-btn ${isDone ? '' : 'empty'}" disabled title="${isDone ? 'Completed!' : 'Pending'}">
+              ${act.token}
+            </button>
+            <div style="font-size: 0.7rem; font-weight: bold; margin-top: 2px; color: ${isDone ? 'var(--success)' : 'var(--muted)'};">
+              ${isDone ? 'Completed' : 'Pending'}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     function renderResources() {
       const list = document.getElementById('resources-list');
       list.innerHTML = '';
 
+      if (!currentSection) return;
       const sectionResources = (state.resources || []).filter(r => r.sectionId === currentSection.id);
       if (sectionResources.length === 0) {
         list.innerHTML = `<p style="font-size:0.85rem; color:var(--muted); margin-top:0.5rem; font-style: italic;">No notes or lesson attachments posted yet.</p>`;
@@ -1028,14 +1137,6 @@
       if (confirm("Delete section and students?")) {
         state.sections = state.sections.filter(s => s.id !== secId);
         state.students = state.students.filter(s => s.sectionId !== secId);
-        saveState();
-      }
-    }
-
-    function deleteStudent(event, studentId) {
-      event.stopPropagation();
-      if (confirm("Remove student?")) {
-        state.students = state.students.filter(s => s.id !== studentId);
         saveState();
       }
     }
