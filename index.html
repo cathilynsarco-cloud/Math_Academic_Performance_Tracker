@@ -132,6 +132,8 @@
 
     .student-info { display: flex; align-items: center; gap: 0.35rem; text-align: left; }
     .student-name { cursor: default; font-size: 0.78rem; line-height: 1.1; word-break: break-word; }
+    body.teacher-mode .student-name { cursor: pointer; text-decoration: underline dotted var(--primary); }
+    
     .avatar-display { 
       font-size: 1.5rem; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; 
       background: #f1f5f9; border-radius: 50%; flex-shrink: 0; cursor: pointer; transition: transform 0.2s;
@@ -140,6 +142,8 @@
 
     .act-header-wrapper { cursor: pointer; display: block; color: inherit; text-decoration: none; padding: 0.2rem; border-radius: 6px; }
     .act-header-wrapper:hover { background: #e2e8f0; }
+    body.teacher-mode .act-header-wrapper:hover { background: #e0e7ff; }
+    
     .act-title-text { 
       font-size: 0.7rem; color: var(--primary); font-weight: bold; text-transform: none; 
       margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
@@ -611,6 +615,17 @@
       }
     }
 
+    function editStudentName(studentId) {
+      if (!isTeacher) return;
+      const student = (state.students || []).find(s => s.id === studentId);
+      if (!student) return;
+      const updated = prompt("Edit Student Full Name (Fix spelling):", student.name);
+      if (updated !== null && updated.trim() !== "") {
+        student.name = updated.trim();
+        saveState();
+      }
+    }
+
     function updateLabel(input, labelId) {
       if (input.files && input.files[0]) {
         document.getElementById(labelId).innerText = "📷 " + input.files[0].name;
@@ -778,9 +793,9 @@
 
         card.innerHTML = `
           <div class="card-body" style="display:flex; align-items:center; gap:1rem;">
-            <div class="avatar-display" onclick="event.stopPropagation(); changeStudentAvatar(${student.id})" title="Click to change your emoji avatar">${studentAvatar}</div>
+            <div class="avatar-display" onclick="event.stopPropagation(); changeStudentAvatar(${student.id})" title="Click to change emoji avatar">${studentAvatar}</div>
             <div>
-              <div class="card-title" style="margin-bottom:0.2rem;">${escapeHtml(student.name)}</div>
+              <div class="card-title ${isTeacher ? 'student-name' : ''}" ${isTeacher ? `onclick="event.stopPropagation(); editStudentName(${student.id})" title="Click to edit student name"` : ''} style="margin-bottom:0.2rem;">${escapeHtml(student.name)}</div>
               <div class="card-meta">Click name to view Terms & Progress</div>
             </div>
           </div>
@@ -807,15 +822,19 @@
         const actLabel = act.label || `Act #${idx + 1}`;
         const dateBadge = act.date ? `<div style="font-size:0.65rem; color:var(--muted); font-weight:600;">📅 ${act.date}</div>` : '';
 
+        // If teacher, clicking header edits activity. If student view (not reached here since this is teacher table), opens modal.
+        const headerClickAction = isTeacher ? `editActivity('${act.id}')` : `openModal('${act.id}')`;
+        const headerHint = isTeacher ? ' ✏️ (Click to edit)' : ' 🔍';
+
         const teacherControls = `<div style="margin-top:2px;">
-            <button class="icon-btn-sm" onclick="editActivity('${act.id}')">✏️</button>
-            <button class="icon-btn-sm" style="color:var(--danger);" onclick="deleteActivity('${act.id}')">🗑️</button>
+            <button class="icon-btn-sm" onclick="editActivity('${act.id}')" title="Edit activity">✏️</button>
+            <button class="icon-btn-sm" style="color:var(--danger);" onclick="deleteActivity('${act.id}')" title="Delete activity">🗑️</button>
            </div>`;
 
         headerHtml += `
           <th>
-            <div class="act-header-wrapper" onclick="openModal('${act.id}')">
-              <div style="font-weight:bold; font-size:0.75rem; color: var(--text);">${escapeHtml(actLabel)} 🔍</div>
+            <div class="act-header-wrapper" onclick="${headerClickAction}" title="Click to edit activity settings">
+              <div style="font-weight:bold; font-size:0.75rem; color: var(--text);">${escapeHtml(actLabel)}${headerHint}</div>
               <div class="act-title-text" title="${escapeHtml(act.title)}">${escapeHtml(act.title)}</div>
               ${dateBadge}
             </div>
@@ -845,7 +864,7 @@
             <div class="student-info">
               <div class="avatar-display" onclick="changeStudentAvatar(${student.id})" title="Click to change emoji avatar">${studentAvatar}</div>
               <div style="flex:1; min-width: 0;">
-                <strong class="student-name">${escapeHtml(student.name)}</strong>
+                <strong class="student-name" onclick="editStudentName(${student.id})" title="Click to edit student name">${escapeHtml(student.name)}</strong>
               </div>
             </div>
           </td>
@@ -857,7 +876,7 @@
 
           return `
             <td>
-              <button class="token-btn ${isDone ? '' : 'empty'}" onclick="toggleToken(${student.id}, '${act.id}')">
+              <button class="token-btn ${isDone ? '' : 'empty'}" onclick="toggleToken(${student.id}, '${act.id}')" title="Toggle token status">
                 ${act.token}
               </button>
             </td>
@@ -868,7 +887,7 @@
         const currentRemark = (state.remarks || {})[remarkKey] || "Click to edit remarks";
 
         let statusCell = `
-          <td class="status-cell" onclick="editRemark(${student.id})">
+          <td class="status-cell" onclick="editRemark(${student.id})" title="Click to edit remarks">
             <em>${escapeHtml(currentRemark)}</em>
           </td>
         `;
@@ -1047,7 +1066,7 @@
       if (newLink === null) return;
       const newDesc = prompt("Edit Description / Instructions:", act.description || "");
       if (newDesc === null) return;
-      const newToken = prompt("Edit Token Icon:", act.token || "⭐");
+      const newToken = prompt("Edit Token Icon (⭐, 🏆, 🎨, 🏅, 🚀):", act.token || "⭐");
 
       act.label = newLabel.trim() || act.label;
       act.title = newTitle.trim() || act.title;
