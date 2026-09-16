@@ -286,7 +286,10 @@
 
     <!-- TEACHER CONTROLS PANEL -->
     <div class="teacher-panel">
-      <h3 style="margin-bottom: 0.75rem;">✏️ Teacher Controls</h3>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+        <h3 style="margin: 0;">✏️ Teacher Controls</h3>
+        <button class="btn btn-secondary" onclick="downloadJsonBackup()" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">💾 Download .JSON Backup</button>
+      </div>
       
       <div class="form-grid" id="form-add-section" style="margin-bottom: 1rem;">
         <input type="text" id="new-section-name" placeholder="New Section Name" />
@@ -501,23 +504,71 @@
       }
     };
 
+    // --- LOCAL STORAGE BACKUP KEYS ---
+    const LOCAL_BACKUP_KEY = 'classroom_hub_laptop_backup_v1';
+
+    // Modified Firebase Snapshot Listener with Smart Recovery
     docRef.onSnapshot((doc) => {
-      if (doc.exists) {
+      if (doc.exists && doc.data() && Object.keys(doc.data()).length > 0) {
+        // Firebase has valid data, sync it
         state = Object.assign({}, state, doc.data());
         if(!state.teacherProfile) {
           state.teacherProfile = { name: "Teacher Name", photo: "", description: "Add description here." };
         }
+        // Update local laptop backup to match current Firebase state
+        localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify(state));
         render();
       } else {
+        // Firebase was wiped or is empty! Check laptop storage fallback.
+        const localBackup = localStorage.getItem(LOCAL_BACKUP_KEY);
+        if (localBackup) {
+          console.warn("Firebase data was empty. Restoring from laptop storage backup!");
+          try {
+            state = JSON.parse(localBackup);
+            render();
+            // Push the recovered data back up to Firebase so it heals automatically
+            docRef.set(state);
+            return;
+          } catch (e) {
+            console.error("Failed to parse local backup", e);
+          }
+        }
+        // If no backup exists anywhere, initialize default state
         saveState();
       }
     });
 
+    // Modified saveState to save to BOTH Firebase and Laptop Storage
     function saveState() {
+      // 1. Save locally to laptop storage first (instant & reliable backup)
+      try {
+        localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn("Local storage write failed:", e);
+      }
+
+      // 2. Save to Firebase
       docRef.set(state).catch(err => {
         console.error("Firestore Save Error: ", err);
-        alert("Failed to save changes! Data size might exceed Firestore's 1MB limit.");
+        alert("Failed to save to Firebase! Data size might exceed limits, but your laptop backup is safe.");
       });
+    }
+
+    // Function to download permanent .json backup file directly to Downloads
+    function downloadJsonBackup() {
+      try {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        const dateStr = new Date().toISOString().slice(0, 10);
+        downloadAnchor.setAttribute("download", `classroom_hub_backup_${dateStr}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+      } catch (e) {
+        console.error("Download failed:", e);
+        alert("Could not generate JSON backup file.");
+      }
     }
 
     function processAndCompressImage(file, maxWidth = 800, quality = 0.6) {
@@ -997,7 +1048,6 @@
         });
       };
 
-      // In teacher table view, keep Girls first or as desired, keeping original table sequence intact
       if (girls.length > 0) {
         const catTr1 = document.createElement('tr');
         catTr1.className = "category-row";
