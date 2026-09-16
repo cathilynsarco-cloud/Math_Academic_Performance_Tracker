@@ -125,7 +125,7 @@
     th:first-child, td:first-child {
       position: sticky; left: 0; z-index: 3; background: var(--card);
       border-right: 2px solid var(--border); box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-      width: 150px !important; min-width: 150px !important; max-width: 150px !important;
+      width: 170px !important; min-width: 170px !important; max-width: 170px !important;
     }
     th:first-child { background: #f1f5f9; z-index: 11; }
     th:not(:first-child), td:not(:first-child) { min-width: 75px; max-width: 110px; }
@@ -504,57 +504,46 @@
       }
     };
 
-    // --- LOCAL STORAGE BACKUP KEYS ---
     const LOCAL_BACKUP_KEY = 'classroom_hub_laptop_backup_v1';
 
-    // Modified Firebase Snapshot Listener with Smart Recovery
     docRef.onSnapshot((doc) => {
       if (doc.exists && doc.data() && Object.keys(doc.data()).length > 0) {
-        // Firebase has valid data, sync it
         state = Object.assign({}, state, doc.data());
         if(!state.teacherProfile) {
           state.teacherProfile = { name: "Teacher Name", photo: "", description: "Add description here." };
         }
-        // Update local laptop backup to match current Firebase state
         localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify(state));
         render();
       } else {
-        // Firebase was wiped or is empty! Check laptop storage fallback.
         const localBackup = localStorage.getItem(LOCAL_BACKUP_KEY);
         if (localBackup) {
           console.warn("Firebase data was empty. Restoring from laptop storage backup!");
           try {
             state = JSON.parse(localBackup);
             render();
-            // Push the recovered data back up to Firebase so it heals automatically
             docRef.set(state);
             return;
           } catch (e) {
             console.error("Failed to parse local backup", e);
           }
         }
-        // If no backup exists anywhere, initialize default state
         saveState();
       }
     });
 
-    // Modified saveState to save to BOTH Firebase and Laptop Storage
     function saveState() {
-      // 1. Save locally to laptop storage first (instant & reliable backup)
       try {
         localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify(state));
       } catch (e) {
         console.warn("Local storage write failed:", e);
       }
 
-      // 2. Save to Firebase
       docRef.set(state).catch(err => {
         console.error("Firestore Save Error: ", err);
         alert("Failed to save to Firebase! Data size might exceed limits, but your laptop backup is safe.");
       });
     }
 
-    // Function to download permanent .json backup file directly to Downloads
     function downloadJsonBackup() {
       try {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
@@ -725,6 +714,36 @@
       }
     }
 
+    function deleteStudent(studentId) {
+      if (!isTeacher) return;
+      const student = (state.students || []).find(s => s.id === studentId);
+      if (!student) return;
+      
+      if (confirm(`Are you sure you want to delete ${student.name}? This will also remove their task completions and remarks.`)) {
+        state.students = state.students.filter(s => s.id !== studentId);
+        
+        // Clean up completions associated with this student
+        if (state.completions) {
+          Object.keys(state.completions).forEach(key => {
+            if (key.startsWith(`${studentId}_`)) {
+              delete state.completions[key];
+            }
+          });
+        }
+        
+        // Clean up remarks associated with this student
+        if (state.remarks) {
+          Object.keys(state.remarks).forEach(key => {
+            if (key.startsWith(`${studentId}_`)) {
+              delete state.remarks[key];
+            }
+          });
+        }
+
+        saveState();
+      }
+    }
+
     function updateLabel(input, labelId) {
       if (input.files && input.files[0]) {
         document.getElementById(labelId).innerText = "📷 " + input.files[0].name;
@@ -890,68 +909,42 @@
         return;
       }
 
-      // RENDER BOYS GROUP FIRST IN STUDENT VIEW
-      if (boys.length > 0) {
-        const boyHeader = document.createElement('h4');
-        boyHeader.style.cssText = "margin: 0.5rem 0 0.75rem 0; color: var(--primary); font-size: 1.1rem;";
-        boyHeader.innerText = "👦 Boys (A to Z)";
-        container.appendChild(boyHeader);
+      const renderGridCards = (studentList, groupTitle) => {
+        const header = document.createElement('h4');
+        header.style.cssText = "margin: 0.5rem 0 0.75rem 0; color: var(--primary); font-size: 1.1rem;";
+        header.innerText = groupTitle;
+        container.appendChild(header);
 
-        const boyGrid = document.createElement('div');
-        boyGrid.className = 'grid-container';
-        boyGrid.style.marginBottom = "1.5rem";
+        const grid = document.createElement('div');
+        grid.className = 'grid-container';
+        grid.style.marginBottom = "1.5rem";
         
-        boys.forEach(student => {
+        studentList.forEach(student => {
           const card = document.createElement('div');
           card.className = 'student-card';
           const studentAvatar = student.avatar || '👦';
+          const teacherDeleteBtn = isTeacher ? `<button class="action-badge-btn" style="background:var(--danger); position:absolute; top:10px; right:10px;" onclick="event.stopPropagation(); deleteStudent(${student.id})" title="Delete student">🗑️</button>` : '';
+
           card.innerHTML = `
-            <div class="card-body" style="display:flex; align-items:center; gap:1rem;">
+            <div class="card-body" style="display:flex; align-items:center; gap:1rem; position:relative;">
               <div class="avatar-display" onclick="event.stopPropagation(); handleAvatarClick(${student.id})" title="${isTeacher ? 'Click to edit gender/avatar' : 'Click to change avatar'}">${studentAvatar}</div>
-              <div>
+              <div style="flex:1; padding-right: ${isTeacher ? '25px' : '0'};">
                 <div class="card-title ${isTeacher ? 'student-name' : ''}" ${isTeacher ? `onclick="event.stopPropagation(); editStudentName(${student.id})" title="Click to edit student name"` : ''} style="margin-bottom:0.2rem;">${escapeHtml(student.name)}</div>
                 <div class="card-meta">Click name to view Terms & Progress</div>
               </div>
+              ${teacherDeleteBtn}
             </div>
           `;
           card.onclick = (e) => {
             if (e.target.tagName !== 'BUTTON') selectStudent(student.id);
           };
-          boyGrid.appendChild(card);
+          grid.appendChild(card);
         });
-        container.appendChild(boyGrid);
-      }
+        container.appendChild(grid);
+      };
 
-      // RENDER GIRLS GROUP SECOND IN STUDENT VIEW
-      if (girls.length > 0) {
-        const girlHeader = document.createElement('h4');
-        girlHeader.style.cssText = "margin: 1rem 0 0.75rem 0; color: var(--primary); font-size: 1.1rem;";
-        girlHeader.innerText = "👧 Girls (A to Z)";
-        container.appendChild(girlHeader);
-
-        const girlGrid = document.createElement('div');
-        girlGrid.className = 'grid-container';
-        
-        girls.forEach(student => {
-          const card = document.createElement('div');
-          card.className = 'student-card';
-          const studentAvatar = student.avatar || '💖';
-          card.innerHTML = `
-            <div class="card-body" style="display:flex; align-items:center; gap:1rem;">
-              <div class="avatar-display" onclick="event.stopPropagation(); handleAvatarClick(${student.id})" title="${isTeacher ? 'Click to edit gender/avatar' : 'Click to change avatar'}">${studentAvatar}</div>
-              <div>
-                <div class="card-title ${isTeacher ? 'student-name' : ''}" ${isTeacher ? `onclick="event.stopPropagation(); editStudentName(${student.id})" title="Click to edit student name"` : ''} style="margin-bottom:0.2rem;">${escapeHtml(student.name)}</div>
-                <div class="card-meta">Click name to view Terms & Progress</div>
-              </div>
-            </div>
-          `;
-          card.onclick = (e) => {
-            if (e.target.tagName !== 'BUTTON') selectStudent(student.id);
-          };
-          girlGrid.appendChild(card);
-        });
-        container.appendChild(girlGrid);
-      }
+      if (boys.length > 0) renderGridCards(boys, "👦 Boys (A to Z)");
+      if (girls.length > 0) renderGridCards(girls, "👧 Girls (A to Z)");
     }
 
     function renderTeacherTable() {
@@ -1010,6 +1003,8 @@
           const tr = document.createElement('tr');
           const studentAvatar = student.avatar || '💖';
           
+          const teacherDeleteIcon = isTeacher ? `<button class="icon-btn-sm" style="color:var(--danger); margin-left:auto;" onclick="deleteStudent(${student.id})" title="Delete student">🗑️</button>` : '';
+
           let studentCell = `
             <td>
               <div class="student-info">
@@ -1017,6 +1012,7 @@
                 <div style="flex:1; min-width: 0;">
                   <strong class="student-name" onclick="editStudentName(${student.id})" title="Click to edit student name">${escapeHtml(student.name)}</strong>
                 </div>
+                ${teacherDeleteIcon}
               </div>
             </td>
           `;
