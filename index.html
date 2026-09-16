@@ -144,7 +144,6 @@
     }
     .avatar-display:hover { transform: scale(1.1); }
     
-    /* Teacher badge overlay on avatar in teacher mode */
     body.teacher-mode .avatar-display::after {
       content: '⚙️';
       position: absolute;
@@ -195,9 +194,7 @@
       display: flex; align-items: center; gap: 1rem; background: #f8fafc; padding: 1rem 1.25rem;
       border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.5rem;
     }
-    .vertical-act-table {
-      width: 100%; border-collapse: collapse;
-    }
+    .vertical-act-table { width: 100%; border-collapse: collapse; }
     .vertical-act-table th, .vertical-act-table td {
       padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle;
     }
@@ -205,12 +202,10 @@
       background: #f1f5f9; font-size: 0.8rem; color: var(--muted); text-transform: uppercase;
     }
 
-    /* STUDENT FINAL STATUS BOX */
     .student-final-status-box {
       margin-top: 1.5rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 1.25rem;
     }
 
-    /* LESSON NOTES & RESOURCES SECTION */
     .resources-section {
       margin-top: 2rem; background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 1.25rem;
     }
@@ -219,7 +214,6 @@
       display: flex; justify-content: space-between; align-items: center; gap: 1rem;
     }
 
-    /* TEACHER PROFILE FOOTER BOX */
     .teacher-profile-box {
       margin-top: 2rem; background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 1.5rem;
       display: flex; gap: 1.5rem; align-items: center; position: relative;
@@ -241,7 +235,6 @@
     .teacher-profile-info h4 { font-size: 1.1rem; margin-bottom: 0.3rem; color: var(--primary); display: inline-block; }
     .teacher-profile-info p { font-size: 0.9rem; color: var(--muted); line-height: 1.4; margin-top: 0.2rem; }
 
-    /* MODAL POP-UP STYLING */
     .modal-backdrop {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.6);
       display: none; justify-content: center; align-items: center; z-index: 100; padding: 1rem;
@@ -308,11 +301,11 @@
         <input type="text" id="new-student-name" placeholder="Student Full Name" />
         <select id="new-student-gender">
           <option value="Female">👧 Female</option>
-          <option value="Male">👦 Male</option>
+          <option value="Male" selected>👦 Male</option>
         </select>
         <select id="new-student-avatar">
           <optgroup label="👦 Boy Avatars / Emojis">
-            <option value="👦">👦 Boy Face</option>
+            <option value="👦" selected>👦 Boy Face</option>
             <option value="🧒">🧒 Child</option>
             <option value="🧢">🧢 Cap Boy</option>
             <option value="👓">👓 Smart Boy</option>
@@ -332,7 +325,7 @@
             <option value="🌸">🌸 Flower Avatar</option>
             <option value="🎨">🎨 Artist Girl</option>
             <option value="🐰">🐰 Bunny Avatar</option>
-            <option value="💖" selected>💖 Heart Kid (Default)</option>
+            <option value="💖">💖 Heart Kid</option>
             <option value="🦋">🦋 Butterfly Kid</option>
           </optgroup>
         </select>
@@ -404,7 +397,7 @@
       <!-- STUDENT VIEW VERTICAL LIST -->
       <div class="student-view-container" id="student-vertical-container" style="display: none;">
         <div class="student-header-banner">
-          <div class="avatar-display" id="student-view-avatar" onclick="handleAvatarClick(currentStudent.id)" title="Click to change avatar/gender" style="width: 50px; height: 50px; font-size: 2rem;">💖</div>
+          <div class="avatar-display" id="student-view-avatar" onclick="handleAvatarClick(currentStudent.id)" title="Click to change avatar" style="width: 50px; height: 50px; font-size: 2rem;">💖</div>
           <div>
             <h2 id="student-view-name" style="font-size: 1.4rem; color: var(--text);">Student Name</h2>
             <div style="font-size: 0.85rem; color: var(--muted);" id="student-view-term-label">Term Progress Hub</div>
@@ -523,7 +516,7 @@
     function saveState() {
       docRef.set(state).catch(err => {
         console.error("Firestore Save Error: ", err);
-        alert("Failed to save changes! The data size might exceed Firestore's 1MB limit.");
+        alert("Failed to save changes! Data size might exceed Firestore's 1MB limit.");
       });
     }
 
@@ -636,13 +629,11 @@
       event.target.value = '';
     }
 
-    // UPDATED / NEW FUNCTION TO EDIT STUDENT GENDER & AVATAR
     function handleAvatarClick(studentId) {
       const student = (state.students || []).find(s => s.id === studentId);
       if (!student) return;
 
       if (isTeacher) {
-        // Teacher Mode: Prompt to update Gender first, then Avatar emoji
         const currentGender = student.gender || 'Female';
         const newGenderInput = prompt(`Edit Gender for ${student.name}\nType either "Female" or "Male":`, currentGender);
         
@@ -657,7 +648,6 @@
             return;
           }
 
-          // Next prompt for avatar emoji change
           const newAvatar = prompt("Choose or type a new emoji avatar (e.g. 👦, 👧, 🦊, 🚀, 💖):", student.avatar || "💖");
           if (newAvatar !== null && newAvatar.trim() !== "") {
             student.avatar = newAvatar.trim().substring(0, 4);
@@ -665,7 +655,6 @@
           saveState();
         }
       } else {
-        // Student Mode: Only allow changing their own emoji avatar
         const newAvatar = prompt("Choose or type your favorite emoji avatar (e.g. 🦊, 🚀, 🎨, 💖):", student.avatar || "💖");
         if (newAvatar !== null && newAvatar.trim() !== "") {
           student.avatar = newAvatar.trim().substring(0, 4);
@@ -850,47 +839,16 @@
         return;
       }
 
-      // Render Girls Group
-      if (girls.length > 0) {
-        const girlHeader = document.createElement('h4');
-        girlHeader.style.cssText = "margin: 1rem 0 0.75rem 0; color: var(--primary); font-size: 1.1rem;";
-        girlHeader.innerText = "👧 Girls (A to Z)";
-        container.appendChild(girlHeader);
-
-        const girlGrid = document.createElement('div');
-        girlGrid.className = 'grid-container';
-        girlGrid.style.marginBottom = "1.5rem";
-        
-        girls.forEach(student => {
-          const card = document.createElement('div');
-          card.className = 'student-card';
-          const studentAvatar = student.avatar || '💖';
-          card.innerHTML = `
-            <div class="card-body" style="display:flex; align-items:center; gap:1rem;">
-              <div class="avatar-display" onclick="event.stopPropagation(); handleAvatarClick(${student.id})" title="${isTeacher ? 'Click to edit gender/avatar' : 'Click to change avatar'}">${studentAvatar}</div>
-              <div>
-                <div class="card-title ${isTeacher ? 'student-name' : ''}" ${isTeacher ? `onclick="event.stopPropagation(); editStudentName(${student.id})" title="Click to edit student name"` : ''} style="margin-bottom:0.2rem;">${escapeHtml(student.name)}</div>
-                <div class="card-meta">Click name to view Terms & Progress</div>
-              </div>
-            </div>
-          `;
-          card.onclick = (e) => {
-            if (e.target.tagName !== 'BUTTON') selectStudent(student.id);
-          };
-          girlGrid.appendChild(card);
-        });
-        container.appendChild(girlGrid);
-      }
-
-      // Render Boys Group
+      // RENDER BOYS GROUP FIRST IN STUDENT VIEW
       if (boys.length > 0) {
         const boyHeader = document.createElement('h4');
-        boyHeader.style.cssText = "margin: 1rem 0 0.75rem 0; color: var(--primary); font-size: 1.1rem;";
+        boyHeader.style.cssText = "margin: 0.5rem 0 0.75rem 0; color: var(--primary); font-size: 1.1rem;";
         boyHeader.innerText = "👦 Boys (A to Z)";
         container.appendChild(boyHeader);
 
         const boyGrid = document.createElement('div');
         boyGrid.className = 'grid-container';
+        boyGrid.style.marginBottom = "1.5rem";
         
         boys.forEach(student => {
           const card = document.createElement('div');
@@ -911,6 +869,37 @@
           boyGrid.appendChild(card);
         });
         container.appendChild(boyGrid);
+      }
+
+      // RENDER GIRLS GROUP SECOND IN STUDENT VIEW
+      if (girls.length > 0) {
+        const girlHeader = document.createElement('h4');
+        girlHeader.style.cssText = "margin: 1rem 0 0.75rem 0; color: var(--primary); font-size: 1.1rem;";
+        girlHeader.innerText = "👧 Girls (A to Z)";
+        container.appendChild(girlHeader);
+
+        const girlGrid = document.createElement('div');
+        girlGrid.className = 'grid-container';
+        
+        girls.forEach(student => {
+          const card = document.createElement('div');
+          card.className = 'student-card';
+          const studentAvatar = student.avatar || '💖';
+          card.innerHTML = `
+            <div class="card-body" style="display:flex; align-items:center; gap:1rem;">
+              <div class="avatar-display" onclick="event.stopPropagation(); handleAvatarClick(${student.id})" title="${isTeacher ? 'Click to edit gender/avatar' : 'Click to change avatar'}">${studentAvatar}</div>
+              <div>
+                <div class="card-title ${isTeacher ? 'student-name' : ''}" ${isTeacher ? `onclick="event.stopPropagation(); editStudentName(${student.id})" title="Click to edit student name"` : ''} style="margin-bottom:0.2rem;">${escapeHtml(student.name)}</div>
+                <div class="card-meta">Click name to view Terms & Progress</div>
+              </div>
+            </div>
+          `;
+          card.onclick = (e) => {
+            if (e.target.tagName !== 'BUTTON') selectStudent(student.id);
+          };
+          girlGrid.appendChild(card);
+        });
+        container.appendChild(girlGrid);
       }
     }
 
@@ -1008,7 +997,7 @@
         });
       };
 
-      // Girls Section Header & Rows
+      // In teacher table view, keep Girls first or as desired, keeping original table sequence intact
       if (girls.length > 0) {
         const catTr1 = document.createElement('tr');
         catTr1.className = "category-row";
@@ -1017,7 +1006,6 @@
         renderStudentRows(girls);
       }
 
-      // Boys Section Header & Rows
       if (boys.length > 0) {
         const catTr2 = document.createElement('tr');
         catTr2.className = "category-row";
@@ -1077,7 +1065,6 @@
         });
       }
 
-      // Render Final Status / Remark visible to students
       const remarkKey = `${currentStudent.id}_term${currentTerm}`;
       const termRemark = (state.remarks || {})[remarkKey];
       const remarkEl = document.getElementById('student-view-remark-text');
@@ -1336,7 +1323,7 @@
     function addStudent() {
       const name = document.getElementById('new-student-name').value.trim();
       const gender = document.getElementById('new-student-gender').value;
-      const avatar = document.getElementById('new-student-avatar').value || '💖';
+      const avatar = document.getElementById('new-student-avatar').value || '👦';
       if (!name || !currentSection) return alert("Enter student name");
 
       if (!state.students) state.students = [];
