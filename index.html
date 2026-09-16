@@ -130,6 +130,10 @@
     th:first-child { background: #f1f5f9; z-index: 11; }
     th:not(:first-child), td:not(:first-child) { min-width: 75px; max-width: 110px; }
 
+    .category-row th {
+      background: #e2e8f0; color: var(--text); font-weight: bold; font-size: 0.85rem; text-align: left; padding-left: 0.75rem;
+    }
+
     .student-info { display: flex; align-items: center; gap: 0.35rem; text-align: left; }
     .student-name { cursor: default; font-size: 0.78rem; line-height: 1.1; word-break: break-word; }
     body.teacher-mode .student-name { cursor: pointer; text-decoration: underline dotted var(--primary); }
@@ -289,6 +293,10 @@
 
       <div class="form-grid" id="form-section-controls" style="display: none;">
         <input type="text" id="new-student-name" placeholder="Student Full Name" />
+        <select id="new-student-gender">
+          <option value="Female">👧 Female</option>
+          <option value="Male">👦 Male</option>
+        </select>
         <select id="new-student-avatar">
           <optgroup label="👦 Boy Avatars / Emojis">
             <option value="👦">👦 Boy Face</option>
@@ -344,7 +352,7 @@
     <!-- STUDENTS VIEW -->
     <div id="students-view" style="display: none;">
       <h3 style="margin-bottom: 1.5rem; color: var(--muted);" id="students-view-subtitle">Select Your Name to Continue</h3>
-      <div class="grid-container" id="students-grid"></div>
+      <div id="students-container-grouped"></div>
     </div>
 
     <!-- TERMS VIEW -->
@@ -786,36 +794,84 @@
 
     function renderStudentsGrid() {
       if (!currentSection) return;
-      const grid = document.getElementById('students-grid');
-      grid.innerHTML = '';
+      const container = document.getElementById('students-container-grouped');
+      container.innerHTML = '';
       
       let students = (state.students || []).filter(s => s.sectionId === currentSection.id);
-      students.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }));
+      
+      let girls = students.filter(s => (s.gender || 'Female') === 'Female');
+      let boys = students.filter(s => s.gender === 'Male');
+
+      girls.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }));
+      boys.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }));
 
       if (students.length === 0) {
-        grid.innerHTML = `<p style="color:var(--muted); font-style:italic;">No students added yet.</p>`;
+        container.innerHTML = `<p style="color:var(--muted); font-style:italic;">No students added yet.</p>`;
         return;
       }
 
-      students.forEach(student => {
-        const card = document.createElement('div');
-        card.className = 'student-card';
-        const studentAvatar = student.avatar || '💖';
+      // Render Girls Group
+      if (girls.length > 0) {
+        const girlHeader = document.createElement('h4');
+        girlHeader.style.cssText = "margin: 1rem 0 0.75rem 0; color: var(--primary); font-size: 1.1rem;";
+        girlHeader.innerText = "👧 Girls (A to Z)";
+        container.appendChild(girlHeader);
 
-        card.innerHTML = `
-          <div class="card-body" style="display:flex; align-items:center; gap:1rem;">
-            <div class="avatar-display" onclick="event.stopPropagation(); changeStudentAvatar(${student.id})" title="Click to change emoji avatar">${studentAvatar}</div>
-            <div>
-              <div class="card-title ${isTeacher ? 'student-name' : ''}" ${isTeacher ? `onclick="event.stopPropagation(); editStudentName(${student.id})" title="Click to edit student name"` : ''} style="margin-bottom:0.2rem;">${escapeHtml(student.name)}</div>
-              <div class="card-meta">Click name to view Terms & Progress</div>
+        const girlGrid = document.createElement('div');
+        girlGrid.className = 'grid-container';
+        girlGrid.style.marginBottom = "1.5rem";
+        
+        girls.forEach(student => {
+          const card = document.createElement('div');
+          card.className = 'student-card';
+          const studentAvatar = student.avatar || '💖';
+          card.innerHTML = `
+            <div class="card-body" style="display:flex; align-items:center; gap:1rem;">
+              <div class="avatar-display" onclick="event.stopPropagation(); changeStudentAvatar(${student.id})" title="Click to change emoji avatar">${studentAvatar}</div>
+              <div>
+                <div class="card-title ${isTeacher ? 'student-name' : ''}" ${isTeacher ? `onclick="event.stopPropagation(); editStudentName(${student.id})" title="Click to edit student name"` : ''} style="margin-bottom:0.2rem;">${escapeHtml(student.name)}</div>
+                <div class="card-meta">Click name to view Terms & Progress</div>
+              </div>
             </div>
-          </div>
-        `;
-        card.onclick = (e) => {
-          if (e.target.tagName !== 'BUTTON') selectStudent(student.id);
-        };
-        grid.appendChild(card);
-      });
+          `;
+          card.onclick = (e) => {
+            if (e.target.tagName !== 'BUTTON') selectStudent(student.id);
+          };
+          girlGrid.appendChild(card);
+        });
+        container.appendChild(girlGrid);
+      }
+
+      // Render Boys Group
+      if (boys.length > 0) {
+        const boyHeader = document.createElement('h4');
+        boyHeader.style.cssText = "margin: 1rem 0 0.75rem 0; color: var(--primary); font-size: 1.1rem;";
+        boyHeader.innerText = "👦 Boys (A to Z)";
+        container.appendChild(boyHeader);
+
+        const boyGrid = document.createElement('div');
+        boyGrid.className = 'grid-container';
+        
+        boys.forEach(student => {
+          const card = document.createElement('div');
+          card.className = 'student-card';
+          const studentAvatar = student.avatar || '👦';
+          card.innerHTML = `
+            <div class="card-body" style="display:flex; align-items:center; gap:1rem;">
+              <div class="avatar-display" onclick="event.stopPropagation(); changeStudentAvatar(${student.id})" title="Click to change emoji avatar">${studentAvatar}</div>
+              <div>
+                <div class="card-title ${isTeacher ? 'student-name' : ''}" ${isTeacher ? `onclick="event.stopPropagation(); editStudentName(${student.id})" title="Click to edit student name"` : ''} style="margin-bottom:0.2rem;">${escapeHtml(student.name)}</div>
+                <div class="card-meta">Click name to view Terms & Progress</div>
+              </div>
+            </div>
+          `;
+          card.onclick = (e) => {
+            if (e.target.tagName !== 'BUTTON') selectStudent(student.id);
+          };
+          boyGrid.appendChild(card);
+        });
+        container.appendChild(boyGrid);
+      }
     }
 
     function renderTeacherTable() {
@@ -857,54 +913,78 @@
 
       tbody.innerHTML = '';
       
-      let studentsToRender = (state.students || []).filter(s => s.sectionId === currentSection.id);
-      studentsToRender.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }));
+      let students = (state.students || []).filter(s => s.sectionId === currentSection.id);
+      let girls = students.filter(s => (s.gender || 'Female') === 'Female');
+      let boys = students.filter(s => s.gender === 'Male');
 
-      if (studentsToRender.length === 0) {
+      girls.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }));
+      boys.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent' }));
+
+      if (students.length === 0) {
         tbody.innerHTML = `<tr><td colspan="${activities.length + 2}" style="padding: 2rem; color: var(--muted); font-style: italic;">No students found in this section. Add students using the teacher controls above.</td></tr>`;
         return;
       }
 
-      studentsToRender.forEach(student => {
-        const tr = document.createElement('tr');
-        const studentAvatar = student.avatar || '💖';
-        
-        let studentCell = `
-          <td>
-            <div class="student-info">
-              <div class="avatar-display" onclick="changeStudentAvatar(${student.id})" title="Click to change emoji avatar">${studentAvatar}</div>
-              <div style="flex:1; min-width: 0;">
-                <strong class="student-name" onclick="editStudentName(${student.id})" title="Click to edit student name">${escapeHtml(student.name)}</strong>
-              </div>
-            </div>
-          </td>
-        `;
-
-        let taskCells = activities.map(act => {
-          const key = `${student.id}_${act.id}`;
-          const isDone = !!(state.completions || {})[key];
-
-          return `
+      const renderStudentRows = (studentList) => {
+        studentList.forEach(student => {
+          const tr = document.createElement('tr');
+          const studentAvatar = student.avatar || '💖';
+          
+          let studentCell = `
             <td>
-              <button class="token-btn ${isDone ? '' : 'empty'}" onclick="toggleToken(${student.id}, '${act.id}')" title="Toggle token status">
-                ${act.token}
-              </button>
+              <div class="student-info">
+                <div class="avatar-display" onclick="changeStudentAvatar(${student.id})" title="Click to change emoji avatar">${studentAvatar}</div>
+                <div style="flex:1; min-width: 0;">
+                  <strong class="student-name" onclick="editStudentName(${student.id})" title="Click to edit student name">${escapeHtml(student.name)}</strong>
+                </div>
+              </div>
             </td>
           `;
-        }).join('');
 
-        const remarkKey = `${student.id}_term${currentTerm}`;
-        const currentRemark = (state.remarks || {})[remarkKey] || "Click to edit remarks";
+          let taskCells = activities.map(act => {
+            const key = `${student.id}_${act.id}`;
+            const isDone = !!(state.completions || {})[key];
 
-        let statusCell = `
-          <td class="status-cell" onclick="editRemark(${student.id})" title="Click to edit remarks">
-            <em>${escapeHtml(currentRemark)}</em>
-          </td>
-        `;
+            return `
+              <td>
+                <button class="token-btn ${isDone ? '' : 'empty'}" onclick="toggleToken(${student.id}, '${act.id}')" title="Toggle token status">
+                  ${act.token}
+                </button>
+              </td>
+            `;
+          }).join('');
 
-        tr.innerHTML = studentCell + taskCells + statusCell;
-        tbody.appendChild(tr);
-      });
+          const remarkKey = `${student.id}_term${currentTerm}`;
+          const currentRemark = (state.remarks || {})[remarkKey] || "Click to edit remarks";
+
+          let statusCell = `
+            <td class="status-cell" onclick="editRemark(${student.id})" title="Click to edit remarks">
+              <em>${escapeHtml(currentRemark)}</em>
+            </td>
+          `;
+
+          tr.innerHTML = studentCell + taskCells + statusCell;
+          tbody.appendChild(tr);
+        });
+      };
+
+      // Girls Section Header & Rows
+      if (girls.length > 0) {
+        const catTr1 = document.createElement('tr');
+        catTr1.className = "category-row";
+        catTr1.innerHTML = `<th colspan="${activities.length + 2}">👧 GIRLS (A TO Z)</th>`;
+        tbody.appendChild(catTr1);
+        renderStudentRows(girls);
+      }
+
+      // Boys Section Header & Rows
+      if (boys.length > 0) {
+        const catTr2 = document.createElement('tr');
+        catTr2.className = "category-row";
+        catTr2.innerHTML = `<th colspan="${activities.length + 2}">👦 BOYS (A TO Z)</th>`;
+        tbody.appendChild(catTr2);
+        renderStudentRows(boys);
+      }
     }
 
     function renderStudentVerticalList() {
@@ -977,7 +1057,6 @@
       list.innerHTML = '';
 
       if (!currentSection) return;
-      // Filter resources strictly by current section AND current term
       const sectionResources = (state.resources || []).filter(r => 
         r.sectionId === currentSection.id && (r.term === currentTerm || (!r.term && currentTerm === 1))
       );
@@ -1216,6 +1295,7 @@
 
     function addStudent() {
       const name = document.getElementById('new-student-name').value.trim();
+      const gender = document.getElementById('new-student-gender').value;
       const avatar = document.getElementById('new-student-avatar').value || '💖';
       if (!name || !currentSection) return alert("Enter student name");
 
@@ -1223,6 +1303,7 @@
       state.students.push({
         id: Date.now(),
         name,
+        gender,
         sectionId: currentSection.id,
         avatar
       });
